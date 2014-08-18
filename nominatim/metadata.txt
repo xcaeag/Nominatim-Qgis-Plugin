@@ -1,0 +1,36 @@
+# This file contains metadata for your plugin. Beginning
+# with version 1.8 this is the preferred way to supply information about a
+# plugin. The current method of embedding metadata in __init__.py will
+# be supported until version 2.0
+
+# This file should be included when you package your plugin.
+
+[general]
+name=OSM place search
+qgisMinimumVersion=2.4
+description=Location search helper based on OSM data, Nominatim online tool, provided by mapquest
+version=0.9
+
+changelog=0.9 QGis 2.4 more compatible, use mask plugin if exists
+    0.8.3 : fix encoding pb (http://hub.qgis.org/issues/10920, thanks to Augustin Roche)
+    0.8.2 : fix error on install
+    0.8 : on 'add to layer' action, it is possible not to create a layer for each object (see configuration dialog)
+    0.7 : fix projection problem (for new layer and mask)
+	0.6 : fix proxy connection pb, and bug in search limited to extent 
+	0.5 : proxy configuration is now taken into account if there
+    0.4 : last dock position maintained on startup
+    0.3 : simple_json dependence replaced with json
+    0.2 : QGis 2.0 compatible
+
+tags=location search helper osm
+
+homepage=http://hub.qgis.org/projects/nominatim
+tracker=http://hub.qgis.org/projects/nominatim/issues
+repository=http://plugins.qgis.org/plugins/plugins.xml
+icon=nominatim.png
+experimental=True
+
+deprecated=False
+
+author=Xavier Culos (Agence de l'eau Adour Garonne)
+email=xavier.culos@eau-adour-garonne.fr
