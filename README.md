@@ -25,5 +25,29 @@ Usage
 You can also create a layer (or enrich the layers 'OSM polygon', 'line' or 'point' depending on the configuration) from the selected object, a mask layer (from mask plugin if exists) when element is a polygon
 
 Nominatim-Qgis-Plugin (Français)
---------------------------------
+================================
+
+Aide à la localisation
+	
+Objectif
+--------
+
+Faciliter la localisation par la recherche de lieux (villes, hydrographie...), basé sur l'outil Nominatim (http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy), exposé par Mapquest (http://developer.mapquest.com/web/products/open/nominatim)
+
+Configuration
+-------------
+Les options propres à l'API REST "nominatim" peuvent être paramétrées sous la forme "option1=valeur option2=valeur"
+Ainsi, une limitation de la recherche à une étendue rectangulaire donnée se configure de la façon suivante : "viewbox=-1.85,46.35,3.90,42.50"
+Les autres options sont décrites en ligne : http://open.mapquestapi.com/nominatim/
+
+Usage
+-----
+- Activez l'onglet,
+- Puis saisissez le début du nom du lieu recherché, validez.
+- La recherche peut se limiter à l'emprise géographique courante.
+- Le survol d'un élément de réponse affiche l'emprise géographique correspondante sur la carte.
+- Un double-clic sur l'item (ou bouton zoomer) se positionne sur le lieu en question.
+
+Vous pouvez également créer une couche (ou enrichir les couches 'OSM polygon', 'line' ou 'point', selon la configuration) à partir de l'objet sélectionné, un masque (issue du plugin mask si il est actif) lorsqu'il s'agit d'un polygone.
+
 
