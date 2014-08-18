@@ -25,8 +25,8 @@ changelog=0.9 QGis 2.4 more compatible, use mask plugin if exists
 tags=location search helper osm
 
 homepage=https://github.com/xcaeag/Nominatim-Qgis-Plugin
-tracker=http://hub.qgis.org/projects/nominatim/issues
-repository=https://github.com/xcaeag/Nominatim-Qgis-Plugin
+tracker=https://github.com/xcaeag/Nominatim-Qgis-Plugin/issues
+repository=http://plugins.qgis.org/plugins/nominatim
 icon=nominatim.png
 experimental=True
 
