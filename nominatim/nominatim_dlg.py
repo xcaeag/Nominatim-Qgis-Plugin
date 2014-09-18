@@ -416,7 +416,11 @@ class nominatim_dlg(QDockWidget, Ui_search):
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         if (geom.type() == QGis.Polygon):
             try:
-                from mask_plugin import aeag_mask
+                try:
+                    from mask import aeag_mask
+                except:
+                    from mask_plugin import aeag_mask
+                    
                 aeag_mask.do(mapcrs, { geom }, "Mask "+layerName)
             
             except:
