@@ -9,9 +9,10 @@
 name=OSM place search
 qgisMinimumVersion=2.4
 description=Location search helper based on OSM data, Nominatim online tool, provided by mapquest
-version=0.9
+version=0.9.1
 
-changelog=0.9 QGis 2.4 more compatible, use mask plugin if exists
+changelog=0.9.1  Few minor changes (readme, mask dependence)
+    0.9 QGis 2.4 more compatible, use mask plugin if exists
     0.8.3 : fix encoding pb (http://hub.qgis.org/issues/10920, thanks to Augustin Roche)
     0.8.2 : fix error on install
     0.8 : on 'add to layer' action, it is possible not to create a layer for each object (see configuration dialog)
