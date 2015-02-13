@@ -9,7 +9,7 @@
 name=OSM place search
 qgisMinimumVersion=2.4
 description=Location search helper based on OSM data, Nominatim online tool, provided by mapquest
-version=0.9.1
+version=0.9.2
 
 changelog=0.9.2 : Fix wrong panel management. Thanks to https://github.com/Andre-J 
     0.9.1 : Few minor changes (readme, mask dependence)
