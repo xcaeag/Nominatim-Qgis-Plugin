@@ -61,7 +61,6 @@ class nominatim:
         locale = QSettings().value("locale/userLocale")
         self.myLocale = locale[0:2]
         # exploiter le bon dictionnaire
-        #QgsMessageLog.logMessage((str(self.myLocale)), 'Extensions')
         localePath = QFileInfo(os.path.realpath(__file__)).path() + "/i18n/nominatim_" + self.myLocale + ".qm"
         # initialiser le traducteur
         if QFileInfo(localePath).exists():
@@ -120,11 +119,14 @@ class nominatim:
         QObject.connect(self.act_config, SIGNAL("triggered()"), self.do_config)
         QObject.connect(self.act_nominatim_help, SIGNAL("triggered()"), self.do_help)
         
+        self.iface.addDockWidget( self.defaultArea, self.nominatim_dlg )
+        
     def unload(self):
         self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None, QApplication.UnicodeUTF8) + "...", self.act_config)
         self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None, QApplication.UnicodeUTF8) + "...", self.act_nominatim_help)
         self.store()
-        self.deactivate()     
+        self.deactivate()
+        self.iface.removeDockWidget(self.nominatim_dlg)     
     
     def dockVisibilityChanged(self, visible):
         try:
@@ -135,15 +137,12 @@ class nominatim:
     def dockLocationChanged(self, area):
         self.defaultArea = area
 
-    def activate(self):
-        QgsMessageLog.logMessage("activate !", 'nominatim')
-    
-        self.iface.addDockWidget( self.defaultArea, self.nominatim_dlg )
+    def activate(self):   
+        self.nominatim_dlg.show()
 
     def deactivate(self):
         try:
-            self.nominatim_dlg
-            self.iface.removeDockWidget(self.nominatim_dlg)
+            self.nominatim_dlg.hide()
         except:
             pass
 	
