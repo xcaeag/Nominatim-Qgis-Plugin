@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'W:\projets\QGis plugins\nominatim\conf_dialog.ui'
+# Form implementation generated from reading ui file 'W:\projets\QGis plugins export dev\nominatim\conf_dialog.ui'
 #
-# Created: Wed Oct 16 16:48:23 2013
+# Created: Fri Sep 25 16:28:45 2015
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,7 +28,7 @@ class Ui_ConfDialog(object):
         ConfDialog.setObjectName(_fromUtf8("ConfDialog"))
         ConfDialog.setWindowModality(QtCore.Qt.WindowModal)
         ConfDialog.setEnabled(True)
-        ConfDialog.resize(547, 164)
+        ConfDialog.resize(547, 192)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -103,7 +103,7 @@ class Ui_ConfDialog(object):
 
     def retranslateUi(self, ConfDialog):
         ConfDialog.setWindowTitle(_translate("ConfDialog", "OSM place search plugin configuration", None))
-        self.label_3.setText(_translate("ConfDialog", "<p>Nominatim Search Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\">, data © OpenStreetMap contributors - <a href=\"www.openstreetmap.org/copyright\">copyright</a></p>", None))
+        self.label_3.setText(_translate("ConfDialog", "<p>Nominatim Search from <a href=\"http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy\" target=\"_blank\">OSM</a> <img src=\"http://www.openstreetmap.org/assets/osm_logo.png\">, data © OpenStreetMap contributors - <a href=\"www.openstreetmap.org/copyright\">copyright</a></p>", None))
         self.label.setText(_translate("ConfDialog", "Options : ", None))
         self.lbEx.setText(_translate("ConfDialog", "Ex : ", None))
         self.btnBox.setToolTip(_translate("ConfDialog", "Click here to pick exemple", None))
