@@ -1,15 +1,8 @@
 """
 """
-import sys
+from .conf_dialog import Ui_ConfDialog
 
-from types import *
-from conf_dialog import Ui_ConfDialog
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
-from qgis.core import *
-from qgis.gui import *
+from PyQt5.QtWidgets import (QDialog)
 
 class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
 
@@ -20,11 +13,11 @@ class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
         self.setupUi(self)
         self.defaultcursor = self.cursor
         
-        QObject.connect(self.buttonBox, SIGNAL("accepted()"), self.onAccepted)
-        QObject.connect(self.buttonBox, SIGNAL("rejected()"), self.onRejected)
-        QObject.connect(self.btnBox, SIGNAL("released()"), self.onExBox)
-        QObject.connect(self.btnCountry, SIGNAL("released()"), self.onExCountry)
-        QObject.connect(self.btnMax, SIGNAL("released()"), self.onExMax)
+        self.buttonBox.accepted.connect(self.onAccepted)
+        self.buttonBox.rejected.connect(self.onRejected)
+        self.buttonBox.released.connect(self.onExBox)
+        self.buttonBox.released.connect(self.onExCountry)
+        self.buttonBox.released.connect(self.onExMax)
 
         self.cbStart.setChecked(self.plugin.localiseOnStartup)
         self.singleLayerCbx.setChecked(self.plugin.singleLayer)

@@ -23,6 +23,6 @@ data © OpenStreetMap contributors - <a href="www.openstreetmap.org/copyright">c
 """
 def classFactory(iface): 
   # load aeag_search class from file aeag_search
-  from nominatim import nominatim 
+  from .nominatim import nominatim 
   return nominatim(iface)
 

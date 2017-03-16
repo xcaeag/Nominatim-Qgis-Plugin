@@ -1,41 +1,36 @@
-﻿import sys
-import re
-import urllib
-import json
+﻿import json
 
-from types import *
-from dockwidget import Ui_search
+from .dockwidget import Ui_search
+from . import resources
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import QNetworkProxy
+from PyQt5.QtCore import (Qt, QVariant)
+from PyQt5.QtWidgets import (QDockWidget, QHeaderView, QApplication, QTableWidgetItem)
+from PyQt5.QtGui import (QIcon, QColor)
 
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import (QgsApplication, QgsCoordinateReferenceSystem, 
+                       QgsCoordinateTransform, QgsMessageLog, QgsGeometry,
+                       QgsRectangle, QgsVectorLayer,
+                       QgsField, QgsFields, QgsFeature,
+                       QgsLineSymbol, QgsProject, QgsWkbTypes, QgsUnitTypes)
+
+from qgis.gui import (QgsRubberBand)
 from osgeo import ogr
 from osgeo import osr
 
-_fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
-_toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
-   
-clean=lambda texte:texte.re.sub(r'\*', '</a>', mystring)('  ',' ')    
+import requests
 
-def getHttp(uri):
-    http = QgsHttpTransaction(uri)
-    content = QByteArray()
-    if http.getSynchronously(content):
-        return str(content)
-    else:
-        return None
+  
+def getHttp(uri, params):
+    r = requests.get(uri, params=params)
+    return r.text
 
 def searchJson(params, user, options, options2):
     contents = str(options).strip()
     items = contents.split(' ') 
     
-    for (k,v) in options2.iteritems():
-        params += '&'+k+'='+v
+    for (k,v) in options2.items():
         if k in ['viewbox']:
-            params += '&bounded=1'
+            params["bounded"]="1"
 
     pairs = []    
     for item in items:
@@ -44,18 +39,18 @@ def searchJson(params, user, options, options2):
             pairs.append(pair)
         
     for (k,v) in pairs:
-        if k in ['viewbox', 'countrycodes', 'limit', 'exclude_place_ids', 'addressdetails', 'exclude_place_ids', 'bounded', 'routewidth', 'osm_type', 'osm_id'] and not(k in options2.keys()) :
-            params += '&'+k+'='+v
+        if k in ['viewbox', 'countrycodes', 'limit', 'exclude_place_ids', 'addressdetails', 'exclude_place_ids', 'bounded', 'routewidth', 'osm_type', 'osm_id'] and not(k in list(options2.keys())) :
+            params[k] = v
             
         if k in ['viewbox']:
-            params += '&bounded=1'
+            params["bounded"]="1"
             
-    params += '&polygon_text=1'
+    params["polygon_text"]="1"
+    params["format"]="json"
     
-    uri = 'http://nominatim.openstreetmap.org/search?format=json&%s' % (params)
-    QgsMessageLog.logMessage(uri, 'Extensions')
+    uri = 'http://nominatim.openstreetmap.org/search'
 
-    resource = getHttp(uri)
+    resource = getHttp(uri, params)
     results = json.loads(resource)
 
     return results
@@ -63,12 +58,13 @@ def searchJson(params, user, options, options2):
 """
 """    
 def findNearbyJSON(params, user, options):
-    uri = "http://nominatim.openstreetmap.org/reverse?format=json&%s" % (params)
+    uri = "http://nominatim.openstreetmap.org/reverse"
 
-    resource = getHttp(uri)
+    params["format"]="json"
+
+    resource = getHttp(uri, params)
     results = json.loads(resource)
     
-    QgsMessageLog.logMessage(uri, 'Extensions')
     return results
 
 class nominatim_dlg(QDockWidget, Ui_search):
@@ -121,7 +117,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         self.currentExtent = self.plugin.canvas.extent()
         
         
-        self.tableResult.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        self.tableResult.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         
         try:
             self.editSearch.setText(self.plugin.lastSearch)
@@ -131,10 +127,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
         try:
             if self.plugin.localiseOnStartup:
                 self.doLocalize()
-        except:
-            for e in sys.exc_info():
-                if type(e).__name__ not in ['type', 'traceback']:
-                    QgsMessageLog.logMessage((str(e)), 'Extensions')
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(m, 'Extensions')
             pass
         
 
@@ -244,7 +239,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         
         ogrFeature.SetFID(int(idx+1))
         ogrFeature.SetField(str('id'), str(id))
-        ogrFeature.SetField(str('name'), name.encode('utf-8'))
+        ogrFeature.SetField(str('name'), name)
         
         item = QTableWidgetItem(name)
         item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled )
@@ -279,19 +274,16 @@ class nominatim_dlg(QDockWidget, Ui_search):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs)
             bbox = xform.transform(bbox)
             
-            params = '&lon='+str(bbox.center().x())
-            params += '&lat='+str(bbox.center().y())
-            params += '&zoom=10'
+            params = {"lon":str(bbox.center().x()), "lat":str(bbox.center().y()), "zoom":"10"}
             self.tableResult.clearContents()
             r = findNearbyJSON(params, self.plugin.gnUsername, self.plugin.gnOptions)
             if r != None:
                 self.tableResult.setRowCount(1)
                 self.populateRow(r, 0)
                 
-        except:
-            for e in sys.exc_info():
-                if type(e).__name__ not in ['type', 'traceback']:
-                    QgsMessageLog.logMessage((str(e)), 'Extensions')
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(m, 'Extensions')
             pass
                 
         QgsApplication.restoreOverrideCursor()
@@ -300,7 +292,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         try:
             QgsApplication.setOverrideCursor(Qt.WaitCursor)
             
-            txt = (self.editSearch.text().encode("utf-8")).strip()
+            txt = self.editSearch.text().strip()
             self.plugin.lastSearch = self.editSearch.text()
             self.plugin.limitSearchToExtent = (self.cbExtent.isChecked())
             options = self.plugin.gnOptions
@@ -314,16 +306,14 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 geom = xform.transform(self.plugin.canvas.extent())
                 options2 ={'viewbox':str(geom.xMinimum())+','+str(geom.yMaximum())+','+str(geom.xMaximum())+','+str(geom.yMinimum())}
             
-            params = 'q='+urllib.quote(txt)
-            params += '&addressdetails=0'
+            params = { 'q':txt, 'addressdetails':'0' }
             r = searchJson(params, self.plugin.gnUsername, options, options2)
             if r != None:
                 self.populateTable(r)
                 
-        except:
-            for e in sys.exc_info():
-                if type(e).__name__ not in ['type', 'traceback']:
-                    QgsMessageLog.logMessage((str(e)), 'Extensions')
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(m, 'Extensions')
             pass
                 
         QgsApplication.restoreOverrideCursor()
@@ -351,15 +341,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
             y = geom.boundingBox().center().y()
             
             ww = 50.0
-            if mapcrs.mapUnits() ==  QGis.Feet:
+            if mapcrs.mapUnits() ==  QgsUnitTypes.DistanceFeet :
                 ww = 150
-            if mapcrs.mapUnits() ==  QGis.Degrees:
-                ww = 0.0005
-            if mapcrs.mapUnits() ==  QGis.DecimalDegrees:
-                ww = 0.0005
-            if mapcrs.mapUnits() ==  QGis.DegreesMinutesSeconds:
-                ww = 0.0005
-            if mapcrs.mapUnits() ==  QGis.DegreesDecimalMinutes:
+            if mapcrs.mapUnits() ==  QgsUnitTypes.DistanceDegrees :
                 ww = 0.0005
                 
             bbox = QgsRectangle(x-10*ww, y-10*ww, x+10*ww, y+10*ww) 
@@ -374,9 +358,8 @@ class nominatim_dlg(QDockWidget, Ui_search):
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
 
         if (ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint):
-            self.rubber = QgsRubberBand(self.plugin.canvas, False)  # True = a polygon
+            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PointGeometry)  
             self.rubber.setColor(QColor(50,50,255,100))
-            self.rubber.reset(QGis.Point)    
             self.rubber.setIcon (self.rubber.ICON_CIRCLE)
             self.rubber.setIconSize(15)
             self.rubber.setWidth(2)
@@ -388,10 +371,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
             else:
                 geom = geom.intersection(QgsGeometry.fromRect(self.plugin.canvas.extent()))
                 
-            self.rubber = QgsRubberBand(self.plugin.canvas, True)  # True = a polygon
+            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PolygonGeometry) 
             self.rubber.setColor(QColor(50,50,255,100))
             self.rubber.setWidth(4)
-            self.rubber.reset(QGis.Polygon)
             self.rubber.setToGeometry(geom, None)        
 
     def go(self, item, zoom=True):
@@ -414,7 +396,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         ogrFeature = item.data(Qt.UserRole)
         layerName = "OSM "+ogrFeature.GetFieldAsString('id')
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
-        if (geom.type() == QGis.Polygon):
+        if (geom.type() == QgsWkbTypes.PolygonGeometry):
             try:
                 try:
                     from mask import aeag_mask
@@ -440,7 +422,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
     
                 maskLayer = QgsVectorLayer("MultiPolygon", "Mask "+layerName, "memory")
                 maskLayer.setCrs(toCrs) 
-                QgsMapLayerRegistry.instance().addMapLayer(maskLayer)
+                QgsProject.instance().addMapLayer(maskLayer)
                 pr = maskLayer.dataProvider()
                 
                 fields = QgsFields()
@@ -451,7 +433,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 fet.setGeometry( mask )
                 fet.setFields(fields)
                 fet.setAttribute("id", (ogrFeature.GetFieldAsString('id')))
-                fet.setAttribute("name", (ogrFeature.GetFieldAsString('name').decode('utf-8')))
+                fet.setAttribute("name", (ogrFeature.GetFieldAsString('name')))
             
                 pr.addAttributes( fields.toList() )
                     
@@ -461,27 +443,27 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 maskLayer.updateExtents()        
                     
                 # transparence, epaisseur
-                rendererV2 = maskLayer.rendererV2()
-                for s in rendererV2.symbols():
-                    s.setAlpha(0.90)
-                    s.setColor(QColor(255, 255, 255))
-                    if isinstance(s, QgsLineSymbolV2):
-                        s.setWidth(0)
-                    
-                self.plugin.iface.legendInterface().refreshLayerSymbology(maskLayer)  #Refresh legend
+                renderer = maskLayer.renderer() # QgsFeatureRenderer, QgsSingleSymbolRenderer  ?
+                s = renderer.symbol()
+                s.setAlpha(0.90)
+                s.setColor(QColor(255, 255, 255))
+                if isinstance(s, QgsLineSymbol):
+                    s.setWidth(0)
+                
+                layerTree = QgsProject.instance().layerTreeRoot().findLayer(maskLayer)
+                if layerTree:
+                    self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(layerTree)  #Refresh legend
             
             self.go(item)
 
     def getLayerById(self, id):
-        for layer in self.plugin.iface.legendInterface().layers():
+        for layer in QgsProject.instance().layers():
             if layer.id() == id:
                 return layer
             
         return None
 
     def doLayer(self, item):
-        mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
-
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
 
@@ -493,17 +475,17 @@ class nominatim_dlg(QDockWidget, Ui_search):
         fet.setFields(fields)
         fet.setGeometry(geom)
         fet.setAttribute("id", (ogrFeature.GetFieldAsString('id')))
-        fet.setAttribute("name", (ogrFeature.GetFieldAsString('name').decode('utf-8')))
+        fet.setAttribute("name", (ogrFeature.GetFieldAsString('name')))
 
         vl = None
         if not self.plugin.singleLayer:
-            if geom.type() == QGis.Polygon:
+            if geom.type() == QgsWkbTypes.PolygonGeometry:
                 layerName = "OSMPlaceSearch Polygon"
                 layerId = self.MultiPolygonLayerId
-            if geom.type() == QGis.Line:
+            if geom.type() == QgsWkbTypes.LineGeometry:
                 layerName = "OSMPlaceSearch Line"
                 layerId = self.LineLayerId
-            if geom.type() == QGis.Point:
+            if geom.type() == QgsWkbTypes.PointGeometry:
                 layerName = "OSMPlaceSearch Point"
                 layerId = self.PointLayerId
                 
@@ -511,13 +493,13 @@ class nominatim_dlg(QDockWidget, Ui_search):
             if vl != None:
                 pr = vl.dataProvider()
             else:
-                if geom.type() == QGis.Polygon:
+                if geom.type() == QgsWkbTypes.PolygonGeometry:
                     vl = QgsVectorLayer("MultiPolygon", layerName, "memory")
                     self.MultiPolygonLayerId = vl.id()
-                if geom.type() == QGis.Line:
+                if geom.type() == QgsWkbTypes.LineGeometry:
                     vl = QgsVectorLayer("MultiLineString", layerName, "memory")
                     self.LineLayerId = vl.id()
-                if geom.type() == QGis.Point:
+                if geom.type() == QgsWkbTypes.PointGeometry:
                     vl = QgsVectorLayer("Point", layerName, "memory")
                     self.PointLayerId = vl.id()
                     
@@ -526,16 +508,16 @@ class nominatim_dlg(QDockWidget, Ui_search):
                     # ajout de champs
                     pr.addAttributes( fields.toList() )
                     
-                QgsMapLayerRegistry.instance().addMapLayer(vl)
+                QgsProject.instance().addMapLayer(vl)
         else:                
             layerName = "OSM "+ogrFeature.GetFieldAsString('id')
             
             # creer une nouvelle couche si n'existe pas encore
-            if geom.type() == QGis.Polygon:
+            if geom.type() == QgsWkbTypes.PolygonGeometry:
                 vl = QgsVectorLayer("MultiPolygon", layerName, "memory")
-            if geom.type() == QGis.Line:
+            if geom.type() == QgsWkbTypes.LineGeometry:
                 vl = QgsVectorLayer("MultiLineString", layerName, "memory")
-            if geom.type() == QGis.Point:
+            if geom.type() == QgsWkbTypes.PointGeometry:
                 vl = QgsVectorLayer("Point", layerName, "memory")
                 
             if vl != None:
@@ -543,7 +525,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 # ajout de champs
                 pr.addAttributes( fields.toList() )
 
-            QgsMapLayerRegistry.instance().addMapLayer(vl)
+            QgsProject.instance().addMapLayer(vl)
 
         if vl != None:
             vl.setProviderEncoding('UTF-8')
@@ -555,11 +537,11 @@ class nominatim_dlg(QDockWidget, Ui_search):
             vl.updateExtents()        
           
             # transparence, epaisseur
-            rendererV2 = vl.rendererV2()
-            for s in rendererV2.symbols():
-                s.setAlpha(0.4)
-                if isinstance(s, QgsLineSymbolV2):
-                    s.setWidth(4)
+            renderer = vl.renderer()
+            s = renderer.symbol()
+            s.setAlpha(0.4)
+            if isinstance(s, QgsLineSymbol):
+                s.setWidth(4)
                 
             self.plugin.iface.legendInterface().refreshLayerSymbology(vl)  #Refresh legend
                     

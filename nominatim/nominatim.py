@@ -18,23 +18,16 @@ email                : xavier.culos@eau-adour-garonne.fr
 """
 # Import the PyQt and QGIS libraries
 import os
-import sys
-from PyQt4 import QtWebKit
-from PyQt4.QtCore import * 
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
-from ui_browser import Ui_browser
 
-from nominatim_dlg import nominatim_dlg
-from nominatim_conf_dlg import nominatim_conf_dlg
+from PyQt5.QtCore import (QCoreApplication, QFileInfo, Qt, QSettings, QTranslator) 
+from PyQt5.QtGui import (QDesktopServices)
+from PyQt5.QtWidgets import (QAction, QApplication)
+import webbrowser
 
-# Initialize Qt resources from file resources.py
-import resources
+from qgis.core import (QgsMessageLog)
 
-_fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
-_toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
-
+from .nominatim_dlg import nominatim_dlg
+from .nominatim_conf_dlg import nominatim_conf_dlg
 
 class nominatim: 
 
@@ -47,8 +40,8 @@ class nominatim:
         self.dlgPosX = 100
         self.dlgPosY = 100
         self.lastSearch = ""
-        self.localiseOnStartup = (True)
-        self.limitSearchToExtent = (False)
+        self.localiseOnStartup = True
+        self.limitSearchToExtent = False
         self.gnOptions = ""
         self.gnUsername = ""
         self.defaultArea = Qt.LeftDockWidgetArea
@@ -65,8 +58,7 @@ class nominatim:
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
             self.translator.load(localePath)
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
+            QCoreApplication.installTranslator(self.translator)
                 
         try:
             self.nominatim_dlg
@@ -108,21 +100,21 @@ class nominatim:
     def initGui(self):  
         self.toolBar = self.iface.pluginToolBar()
     
-        self.act_config = QAction(QApplication.translate("nominatim", "Configuration", None, QApplication.UnicodeUTF8) + "...", self.iface.mainWindow())
-        self.act_nominatim_help = QAction(QApplication.translate("nominatim", "Help", None, QApplication.UnicodeUTF8) + "...", self.iface.mainWindow())
+        self.act_config = QAction(QApplication.translate("nominatim", "Configuration", None) + "...", self.iface.mainWindow())
+        self.act_nominatim_help = QAction(QApplication.translate("nominatim", "Help", None) + "...", self.iface.mainWindow())
     
-        self.iface.addPluginToMenu("&"+QApplication.translate("nominatim", "OSM place search", None, QApplication.UnicodeUTF8) + "...", self.act_config)
-        self.iface.addPluginToMenu("&"+QApplication.translate("nominatim", "OSM place search", None, QApplication.UnicodeUTF8) + "...", self.act_nominatim_help)
+        self.iface.addPluginToMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_config)
+        self.iface.addPluginToMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_nominatim_help)
     
         # Add actions to the toolbar
-        QObject.connect(self.act_config, SIGNAL("triggered()"), self.do_config)
-        QObject.connect(self.act_nominatim_help, SIGNAL("triggered()"), self.do_help)
+        self.act_config.triggered.connect(self.do_config)
+        self.act_nominatim_help.triggered.connect(self.do_help)
         
         self.iface.addDockWidget( self.defaultArea, self.nominatim_dlg )
         
     def unload(self):
-        self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None, QApplication.UnicodeUTF8) + "...", self.act_config)
-        self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None, QApplication.UnicodeUTF8) + "...", self.act_nominatim_help)
+        self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_config)
+        self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_nominatim_help)
         self.store()
         self.deactivate()
         self.iface.removeDockWidget(self.nominatim_dlg)     
@@ -153,35 +145,21 @@ class nominatim:
         dlg.setModal(True)
         
         dlg.show()
-        result = dlg.exec_()
+        dlg.exec_()
         del dlg
     
     def do_help(self):
         try:
-            self.hdialog = QDialog()
-            self.hdialog.setModal(True)
-            self.hdialog.ui = Ui_browser()
-            self.hdialog.ui.setupUi(self.hdialog)
-            
-            if os.path.isfile(self.path + "/help_" + self.myLocale + ".html"):
-                self.hdialog.ui.helpContent.setUrl(QUrl(self.path + "/help_" + self.myLocale + ".html"))
+            if os.path.isfile(self.path+"/help_"+self.myLocale+".html"):
+                webbrowser.open(self.path+"/help_"+self.myLocale+".html")
             else:
-                self.hdialog.ui.helpContent.setUrl(QUrl(self.path + "/help.html"))
-            
-            self.hdialog.ui.helpContent.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateExternalLinks) # Handle link clicks by yourself
-            QObject.connect(self.hdialog.ui.helpContent, SIGNAL("linkClicked(QUrl)"), self.doLink)
-              
-            self.hdialog.ui.helpContent.page().currentFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOn)
-             
-            self.hdialog.show()
-            result = self.hdialog.exec_()
-            del self.hdialog
-        except:
-            for e in sys.exc_info():
-                if type(e).__name__ not in ['type', 'traceback']:
-                  QgsMessageLog.logMessage((str(e)), 'Extensions')
-            pass
+                webbrowser.open(self.path+"/help.html")
 
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(m, 'Extensions')
+            pass
+            
     def doLink(self, url):
         if url.host() == "" :
             self.hdialog.ui.helpContent.page().currentFrame().load(url)
