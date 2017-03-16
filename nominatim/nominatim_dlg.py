@@ -543,7 +543,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
             if isinstance(s, QgsLineSymbol):
                 s.setWidth(4)
                 
-            self.plugin.iface.legendInterface().refreshLayerSymbology(vl)  #Refresh legend
+            layerTree = QgsProject.instance().layerTreeRoot().findLayer(vl)
+            if layerTree:
+                self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(layerTree)  #Refresh legend
                     
             self.go(item, False)
                     
