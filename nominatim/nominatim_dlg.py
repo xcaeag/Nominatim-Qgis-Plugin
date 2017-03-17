@@ -158,12 +158,12 @@ class nominatim_dlg(QDockWidget, Ui_search):
         name = item['display_name']
             
         try:
-            className = QApplication.translate("nominatim", item['class'], None, QApplication.UnicodeUTF8)
+            className = QApplication.translate("nominatim", item['class'], None)
         except:
             className = ""
             
         try:
-            typeName = QApplication.translate("nominatim", item['type'], None, QApplication.UnicodeUTF8)
+            typeName = QApplication.translate("nominatim", item['type'], None)
         except:
             typeName = ""
         
@@ -535,14 +535,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
             
             # mise a jour etendue de la couche
             vl.updateExtents()        
-          
-            # transparence, epaisseur
-            renderer = vl.renderer()
-            s = renderer.symbol()
-            s.setAlpha(0.4)
-            if isinstance(s, QgsLineSymbol):
-                s.setWidth(4)
-                
+                          
             layerTree = QgsProject.instance().layerTreeRoot().findLayer(vl)
             if layerTree:
                 self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(layerTree)  #Refresh legend
