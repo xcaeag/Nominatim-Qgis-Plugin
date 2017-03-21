@@ -15,9 +15,9 @@ class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
         
         self.buttonBox.accepted.connect(self.onAccepted)
         self.buttonBox.rejected.connect(self.onRejected)
-        self.buttonBox.released.connect(self.onExBox)
-        self.buttonBox.released.connect(self.onExCountry)
-        self.buttonBox.released.connect(self.onExMax)
+        self.btnBox.released.connect(self.onExBox)
+        self.btnCountry.released.connect(self.onExCountry)
+        self.btnMax.released.connect(self.onExMax)
 
         self.cbStart.setChecked(self.plugin.localiseOnStartup)
         self.singleLayerCbx.setChecked(self.plugin.singleLayer)

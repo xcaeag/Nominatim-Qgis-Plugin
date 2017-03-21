@@ -463,13 +463,6 @@ class nominatim_dlg(QDockWidget, Ui_search):
             
             self.go(item)
 
-    def getLayerById(self, id):
-        for layer in QgsProject.instance().layers():
-            if layer.id() == id:
-                return layer
-            
-        return None
-
     def doLayer(self, item):
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
@@ -496,7 +489,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 layerName = "OSMPlaceSearch Point"
                 layerId = self.PointLayerId
                 
-            vl = self.getLayerById(layerId)
+            vl = QgsProject.instance().mapLayer(layerId)
             if vl != None:
                 pr = vl.dataProvider()
             else:
