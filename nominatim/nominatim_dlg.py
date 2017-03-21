@@ -1,4 +1,5 @@
 ﻿import json
+from urllib.parse import urlencode
 
 from .dockwidget import Ui_search
 from . import resources
@@ -31,6 +32,7 @@ def searchJson(params, user, options, options2):
     for (k,v) in options2.items():
         if k in ['viewbox']:
             params["bounded"]="1"
+        params[k]=v
 
     pairs = []    
     for item in items:
@@ -49,6 +51,8 @@ def searchJson(params, user, options, options2):
     params["format"]="json"
     
     uri = 'http://nominatim.openstreetmap.org/search'
+    
+    QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
 
     resource = getHttp(uri, params)
     results = json.loads(resource)
@@ -233,7 +237,10 @@ class nominatim_dlg(QDockWidget, Ui_search):
         targetSRS = osr.SpatialReference()
         targetSRS.ImportFromWkt ( str(mapCrsWKT) )
         trsf = osr.CoordinateTransformation(sourceSRS, targetSRS)
-        ogrGeom.Transform(trsf)
+        try:
+            ogrGeom.Transform(trsf)
+        except TypeError as e:
+            QgsMessageLog.logMessage("Nominatim - transformation error. Check map projection.", 'Extensions')
 
         ogrFeature.SetGeometry(ogrGeom)
         

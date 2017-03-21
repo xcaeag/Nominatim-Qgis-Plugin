@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'ui_atlashelp.ui'
 #
 # Created: Tue Jan 24 23:32:27 2012
-#      by: PyQt4 UI code generator 4.8.3
+#      by: PyQt5 UI code generator 4.8.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -36,4 +36,4 @@ class Ui_browser(object):
     def retranslateUi(self, w):
         w.setWindowTitle("Help")
 
-from PyQt4 import QtWebKit
+from PyQt5 import QtWebKit
