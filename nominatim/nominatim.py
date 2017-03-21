@@ -20,9 +20,8 @@ email                : xavier.culos@eau-adour-garonne.fr
 import os
 
 from PyQt5.QtCore import (QCoreApplication, QFileInfo, Qt, QSettings, QTranslator) 
-from PyQt5.QtGui import (QDesktopServices)
 from PyQt5.QtWidgets import (QAction, QApplication)
-import webbrowser
+from .htmldialog import HtmlDialog
 
 from qgis.core import (QgsMessageLog)
 
@@ -149,19 +148,6 @@ class nominatim:
         del dlg
     
     def do_help(self):
-        try:
-            if os.path.isfile(self.path+"/help_"+self.myLocale+".html"):
-                webbrowser.open(self.path+"/help_"+self.myLocale+".html")
-            else:
-                webbrowser.open(self.path+"/help.html")
-
-        except Exception as e:
-            for m in e.args:
-                QgsMessageLog.logMessage(m, 'Extensions')
-            pass
+        dlg = HtmlDialog( None, "help.html" )
+        dlg.exec_()
             
-    def doLink(self, url):
-        if url.host() == "" :
-            self.hdialog.ui.helpContent.page().currentFrame().load(url)
-        else:
-            QDesktopServices.openUrl(url)        
