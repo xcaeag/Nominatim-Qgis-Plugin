@@ -35,7 +35,7 @@ tags=location search helper osm
 
 homepage=https://github.com/xcaeag/Nominatim-Qgis-Plugin
 tracker=https://github.com/xcaeag/Nominatim-Qgis-Plugin/issues
-repository=http://plugins.qgis.org/plugins/nominatim
+repository=https://github.com/xcaeag/Nominatim-Qgis-Plugin
 icon=nominatim.png
 experimental=True
 
