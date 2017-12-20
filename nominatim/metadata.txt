@@ -11,9 +11,9 @@ qgisMinimumVersion=2.99
 qgisMaximumVersion=3.99
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy)
-version=1.2
+version=1.2.1
 
-changelog=
+changelog=1.2.1 : adaptation to API changes (QgsCoordinateTransform)
     1.2 : Fix configuration dialog pb
     1.1 : Code cleaning
     1.0 : Migration to QGis 3

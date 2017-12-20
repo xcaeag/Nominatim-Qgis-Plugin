@@ -8,7 +8,7 @@ from PyQt5.QtCore import (Qt, QVariant)
 from PyQt5.QtWidgets import (QDockWidget, QHeaderView, QApplication, QTableWidgetItem)
 from PyQt5.QtGui import (QIcon, QColor)
 
-from qgis.core import (QgsApplication, QgsCoordinateReferenceSystem, 
+from qgis.core import (QgsProject, QgsApplication, QgsCoordinateReferenceSystem, 
                        QgsCoordinateTransform, QgsMessageLog, QgsGeometry,
                        QgsRectangle, QgsVectorLayer,
                        QgsField, QgsFields, QgsFeature,
@@ -22,6 +22,7 @@ import requests
 
   
 def getHttp(uri, params):
+    QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
     r = requests.get(uri, params=params)
     return r.text
 
@@ -278,7 +279,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
             sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
             targetCrs = QgsCoordinateReferenceSystem()
             targetCrs.createFromSrid(4326)
-            xform = QgsCoordinateTransform(sourceCrs, targetCrs)
+            xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             bbox = xform.transform(bbox)
             
             params = {"lon":str(bbox.center().x()), "lat":str(bbox.center().y()), "zoom":"10"}
@@ -309,9 +310,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
                 targetCrs = QgsCoordinateReferenceSystem()
                 targetCrs.createFromSrid(4326)
-                xform = QgsCoordinateTransform(sourceCrs, targetCrs)
+                xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
                 geom = xform.transform(self.plugin.canvas.extent())
-                options2 ={'viewbox':str(geom.xMinimum())+','+str(geom.yMaximum())+','+str(geom.xMaximum())+','+str(geom.yMinimum())}
+                options2 = {'viewbox':str(geom.xMinimum())+','+str(geom.yMaximum())+','+str(geom.xMaximum())+','+str(geom.yMinimum())}
             
             params = { 'q':txt, 'addressdetails':'0' }
             r = searchJson(params, self.plugin.gnUsername, options, options2)
