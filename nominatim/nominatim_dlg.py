@@ -51,7 +51,7 @@ def searchJson(params, user, options, options2):
     params["polygon_text"]="1"
     params["format"]="json"
     
-    uri = 'http://nominatim.openstreetmap.org/search'
+    uri = 'https://nominatim.openstreetmap.org/search'
     
     QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
 
@@ -63,7 +63,7 @@ def searchJson(params, user, options, options2):
 """
 """    
 def findNearbyJSON(params, user, options):
-    uri = "http://nominatim.openstreetmap.org/reverse"
+    uri = "https://nominatim.openstreetmap.org/reverse"
 
     params["format"]="json"
 
