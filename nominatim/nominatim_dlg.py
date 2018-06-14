@@ -2,9 +2,11 @@
 import re
 import urllib
 import json
+import requests
 
 from types import *
 from dockwidget import Ui_search
+from urllib.parse import urlencode
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -20,22 +22,19 @@ _toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
    
 clean=lambda texte:texte.re.sub(r'\*', '</a>', mystring)('  ',' ')    
 
-def getHttp(uri):
-    http = QgsHttpTransaction(uri)
-    content = QByteArray()
-    if http.getSynchronously(content):
-        return str(content)
-    else:
-        return None
+def getHttp(uri, params):
+    QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
+    r = requests.get(uri, params=params)
+    return r.text
 
 def searchJson(params, user, options, options2):
     contents = str(options).strip()
     items = contents.split(' ') 
     
-    for (k,v) in options2.iteritems():
-        params += '&'+k+'='+v
+    for (k,v) in options2.items():
         if k in ['viewbox']:
-            params += '&bounded=1'
+            params["bounded"]="1"
+        params[k]=v
 
     pairs = []    
     for item in items:
@@ -45,17 +44,19 @@ def searchJson(params, user, options, options2):
         
     for (k,v) in pairs:
         if k in ['viewbox', 'countrycodes', 'limit', 'exclude_place_ids', 'addressdetails', 'exclude_place_ids', 'bounded', 'routewidth', 'osm_type', 'osm_id'] and not(k in options2.keys()) :
-            params += '&'+k+'='+v
+            params[k] = v
             
         if k in ['viewbox']:
-            params += '&bounded=1'
+            params["bounded"]="1"
             
-    params += '&polygon_text=1'
+    params["polygon_text"]="1"
+    params["format"]="json"
     
-    uri = 'http://open.mapquestapi.com/nominatim/v1/search.php?format=json&%s' % (params)
-    QgsMessageLog.logMessage(uri, 'Extensions')
+    uri = 'https://nominatim.openstreetmap.org/search'
+    
+    QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
 
-    resource = getHttp(uri)
+    resource = getHttp(uri, params)
     results = json.loads(resource)
 
     return results
@@ -63,12 +64,13 @@ def searchJson(params, user, options, options2):
 """
 """    
 def findNearbyJSON(params, user, options):
-    uri = "http://open.mapquestapi.com/nominatim/v1/reverse.php?format=json&%s" % (params)
+    uri = "https://nominatim.openstreetmap.org/reverse"
 
-    resource = getHttp(uri)
+    params["format"]="json"
+
+    resource = getHttp(uri, params)
     results = json.loads(resource)
     
-    QgsMessageLog.logMessage(uri, 'Extensions')
     return results
 
 class nominatim_dlg(QDockWidget, Ui_search):
@@ -81,7 +83,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         if typ == event.Leave:
             try:
                 self.plugin.canvas.scene().removeItem(self.rubber)
-            except:
+            except:                
                 pass
 
         return False
@@ -279,9 +281,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs)
             bbox = xform.transform(bbox)
             
-            params = '&lon='+str(bbox.center().x())
-            params += '&lat='+str(bbox.center().y())
-            params += '&zoom=10'
+            params = {"lon":str(bbox.center().x()), "lat":str(bbox.center().y()), "zoom":"10"}
             self.tableResult.clearContents()
             r = findNearbyJSON(params, self.plugin.gnUsername, self.plugin.gnOptions)
             if r != None:
@@ -314,8 +314,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 geom = xform.transform(self.plugin.canvas.extent())
                 options2 ={'viewbox':str(geom.xMinimum())+','+str(geom.yMaximum())+','+str(geom.xMaximum())+','+str(geom.yMinimum())}
             
-            params = 'q='+urllib.quote(txt)
-            params += '&addressdetails=0'
+            params = { 'q':txt, 'addressdetails':'0' }
             r = searchJson(params, self.plugin.gnUsername, options, options2)
             if r != None:
                 self.populateTable(r)

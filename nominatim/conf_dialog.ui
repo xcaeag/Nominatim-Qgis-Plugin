@@ -13,7 +13,7 @@
     <x>0</x>
     <y>0</y>
     <width>547</width>
-    <height>164</height>
+    <height>192</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -43,7 +43,7 @@
         <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>&lt;p&gt;Nominatim Search Courtesy of &lt;a href=&quot;http://www.mapquest.com/&quot; target=&quot;_blank&quot;&gt;MapQuest&lt;/a&gt; &lt;img src=&quot;http://developer.mapquest.com/content/osm/mq_logo.png&quot;&gt;, data © OpenStreetMap contributors - &lt;a href=&quot;www.openstreetmap.org/copyright&quot;&gt;copyright&lt;/a&gt;&lt;/p&gt;</string>
+        <string>&lt;p&gt;Nominatim Search from &lt;a href=&quot;http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy&quot; target=&quot;_blank&quot;&gt;OSM&lt;/a&gt; &lt;img src=&quot;http://www.openstreetmap.org/assets/osm_logo.png&quot;&gt;, data © OpenStreetMap contributors - &lt;a href=&quot;www.openstreetmap.org/copyright&quot;&gt;copyright&lt;/a&gt;&lt;/p&gt;</string>
        </property>
        <property name="openExternalLinks">
         <bool>true</bool>
