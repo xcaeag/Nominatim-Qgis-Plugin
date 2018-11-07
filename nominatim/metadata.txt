@@ -13,7 +13,8 @@ description=Location search helper
 about=Based on OSM data, Nominatim online tool (http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy)
 version=0.9.4
 
-changelog=0.9.4 : geocoding service 'nominatim.openstreetmap.org' over https
+changelog=0.9.5 : use of QgsNetworkAccessManager class for proxy support
+    0.9.4 : geocoding service 'nominatim.openstreetmap.org' over https
     0.9.3 : Change from Mapquest API to OSM Api (Mapquest require key)
     0.9.2 : Fix wrong panel management. Thanks to https://github.com/Andre-J 
     0.9.1 : Few minor changes (readme, mask dependence)
