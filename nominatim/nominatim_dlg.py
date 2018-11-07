@@ -8,35 +8,38 @@ from types import *
 from dockwidget import Ui_search
 from urllib.parse import urlencode
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtNetwork import QNetworkProxy
+from PyQt4.QtCore import QUrl
+from PyQt4.QtGui import QDockWidget, QIcon
+from PyQt4.QtNetwork import QNetworkRequest
 
-from qgis.core import *
+from qgis.core import QgsNetworkAccessManager
+
 from qgis.gui import *
 from osgeo import ogr
 from osgeo import osr
 
-_fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
-_toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
-   
-clean=lambda texte:texte.re.sub(r'\*', '</a>', mystring)('  ',' ')    
+nominatim_networkAccessManager = QgsNetworkAccessManager.instance()
+
 
 def getHttp(uri, params):
     QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
-    r = requests.get(uri, params=params)
-    return r.text
+
+    req = QNetworkRequest(QUrl(uri+"?"+urlencode(params)))
+    reply = nominatim_networkAccessManager.get(req)
+
+    return reply.readAll()
+
 
 def searchJson(params, user, options, options2):
     contents = str(options).strip()
     items = contents.split(' ') 
     
-    for (k,v) in options2.items():
+    for (k, v) in options2.items():
         if k in ['viewbox']:
-            params["bounded"]="1"
-        params[k]=v
+            params["bounded"] = "1"
+        params[k] = v
 
-    pairs = []    
+    pairs = []
     for item in items:
         pair = item.split('=',1)
         if (pair != [''] and pair != [] and len(pair) > 1):    
