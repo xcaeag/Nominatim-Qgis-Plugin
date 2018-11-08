@@ -6,77 +6,80 @@ import requests
 
 from types import *
 from dockwidget import Ui_search
-from urllib.parse import urlencode
 
-from PyQt4.QtCore import QUrl
-from PyQt4.QtGui import QDockWidget, QIcon
+from PyQt4.QtCore import QUrl, Qt, QVariant
+from PyQt4.QtGui import QDockWidget, QIcon, QColor, QHeaderView, QApplication, QTableWidgetItem
 from PyQt4.QtNetwork import QNetworkRequest
 
-from qgis.core import QgsNetworkAccessManager
+from qgis.core import *
 
 from qgis.gui import *
 from osgeo import ogr
 from osgeo import osr
 
-nominatim_networkAccessManager = QgsNetworkAccessManager.instance()
-
-
-def getHttp(uri, params):
-    QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
-
-    req = QNetworkRequest(QUrl(uri+"?"+urlencode(params)))
-    reply = nominatim_networkAccessManager.get(req)
-
-    return reply.readAll()
-
-
-def searchJson(params, user, options, options2):
-    contents = str(options).strip()
-    items = contents.split(' ') 
-    
-    for (k, v) in options2.items():
-        if k in ['viewbox']:
-            params["bounded"] = "1"
-        params[k] = v
-
-    pairs = []
-    for item in items:
-        pair = item.split('=',1)
-        if (pair != [''] and pair != [] and len(pair) > 1):    
-            pairs.append(pair)
-        
-    for (k,v) in pairs:
-        if k in ['viewbox', 'countrycodes', 'limit', 'exclude_place_ids', 'addressdetails', 'exclude_place_ids', 'bounded', 'routewidth', 'osm_type', 'osm_id'] and not(k in options2.keys()) :
-            params[k] = v
-            
-        if k in ['viewbox']:
-            params["bounded"]="1"
-            
-    params["polygon_text"]="1"
-    params["format"]="json"
-    
-    uri = 'https://nominatim.openstreetmap.org/search'
-    
-    QgsMessageLog.logMessage(uri+"?"+urlencode(params), 'Extensions')
-
-    resource = getHttp(uri, params)
-    results = json.loads(resource)
-
-    return results
-    
-"""
-"""    
-def findNearbyJSON(params, user, options):
-    uri = "https://nominatim.openstreetmap.org/reverse"
-
-    params["format"]="json"
-
-    resource = getHttp(uri, params)
-    results = json.loads(resource)
-    
-    return results
 
 class nominatim_dlg(QDockWidget, Ui_search):
+
+    def onGetHttp(self, reply):
+        QgsApplication.restoreOverrideCursor()
+        try:
+            resource = reply.readAll().data().decode('utf8')
+            r = json.loads(resource)
+
+            if (isinstance(r, list)):
+                self.populateTable(r)
+            else:
+                self.populateTable([r])
+        except:
+            self.tableResult.clearContents()
+
+    def getHttp(self, uri, params):
+        QgsApplication.setOverrideCursor(Qt.WaitCursor)
+        QgsMessageLog.logMessage(uri+"?"+urllib.urlencode(params), 'Extensions')
+
+        rq = QUrl(uri)
+        for (k, v) in params.items():
+            rq.addQueryItem(k, v)
+
+        #req = QNetworkRequest(QUrl(uri+"?"+urllib.urlencode(params)))
+        req = QNetworkRequest(rq)
+        self.nominatim_networkAccessManager.get(req)
+
+    def searchJson(self, params, user, options, options2):
+        contents = str(options).strip()
+        items = contents.split(' ') 
+        
+        for (k, v) in options2.items():
+            if k in ['viewbox']:
+                params["bounded"] = "1"
+            params[k] = v
+
+        pairs = []
+        for item in items:
+            pair = item.split('=',1)
+            if (pair != [''] and pair != [] and len(pair) > 1):    
+                pairs.append(pair)
+            
+        for (k,v) in pairs:
+            if k in ['viewbox', 'countrycodes', 'limit', 'exclude_place_ids', 'addressdetails', 'exclude_place_ids', 'bounded', 'routewidth', 'osm_type', 'osm_id'] and not(k in options2.keys()) :
+                params[k] = v
+                
+            if k in ['viewbox']:
+                params["bounded"]="1"
+                
+        params["polygon_text"]="1"
+        params["format"]="json"
+        
+        uri = 'https://nominatim.openstreetmap.org/search'
+        
+        self.getHttp(uri, params)
+        
+    """
+    """    
+    def findNearbyJSON(self, params, user, options):
+        uri = "https://nominatim.openstreetmap.org/reverse"
+        params["format"] = "json"
+        self.getHttp(uri, params)
 
     """
      Gestion de l'évènement "leave", afin d'effacer l'objet sélectionné en sortie du dock  
@@ -122,17 +125,16 @@ class nominatim_dlg(QDockWidget, Ui_search):
             self.cbExtent.setChecked(self.plugin.limitSearchToExtent)
         except:
             self.cbExtent.setChecked(self.plugin.limitSearchToExtent)
-        
+
         self.currentExtent = self.plugin.canvas.extent()
-        
-        
+
         self.tableResult.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
-        
+
         try:
             self.editSearch.setText(self.plugin.lastSearch)
-        except: 
+        except:
             pass
-        
+
         try:
             if self.plugin.localiseOnStartup:
                 self.doLocalize()
@@ -142,17 +144,18 @@ class nominatim_dlg(QDockWidget, Ui_search):
                     QgsMessageLog.logMessage((str(e)), 'Extensions')
             pass
         
+        self.nominatim_networkAccessManager = QgsNetworkAccessManager.instance()
+        self.nominatim_networkAccessManager.finished.connect(self.onGetHttp)
 
     def cellEntered(self, row, col):
         item = self.tableResult.item(row, 0)
 
         try:
             self.plugin.canvas.scene().removeItem(self.rubber)
+            self.showItem(item)
         except:
             pass
-        
-        self.showItem(item)
-                    
+
     def onLayer(self):
         for r in self.tableResult.selectedRanges():
             item = self.tableResult.item(r.topRow(), 0)
@@ -264,18 +267,16 @@ class nominatim_dlg(QDockWidget, Ui_search):
         itemType.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled )
         self.tableResult.setItem(idx, 2, itemType)
 
-    def populateTable(self, r):         
+    def populateTable(self, r):
         idx = 0
         self.tableResult.clearContents()
-        self.tableResult.setRowCount (len(r))
+        self.tableResult.setRowCount(len(r))
         for item in r:
             self.populateRow(item, idx)
             idx = idx+1
         
     def doLocalize(self):
-        try:
-            QgsApplication.setOverrideCursor(Qt.WaitCursor)
-            
+        try:           
             # center
             bbox = self.plugin.canvas.extent()
             sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
@@ -284,25 +285,17 @@ class nominatim_dlg(QDockWidget, Ui_search):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs)
             bbox = xform.transform(bbox)
             
-            params = {"lon":str(bbox.center().x()), "lat":str(bbox.center().y()), "zoom":"10"}
-            self.tableResult.clearContents()
-            r = findNearbyJSON(params, self.plugin.gnUsername, self.plugin.gnOptions)
-            if r != None:
-                self.tableResult.setRowCount(1)
-                self.populateRow(r, 0)
+            params = {"lon": str(bbox.center().x()), "lat": str(bbox.center().y()), "zoom": "10"}
+            self.findNearbyJSON(params, self.plugin.gnUsername, self.plugin.gnOptions)
                 
         except:
             for e in sys.exc_info():
                 if type(e).__name__ not in ['type', 'traceback']:
                     QgsMessageLog.logMessage((str(e)), 'Extensions')
             pass
-                
-        QgsApplication.restoreOverrideCursor()
-                
+                                
     def onReturnPressed(self):
-        try:
-            QgsApplication.setOverrideCursor(Qt.WaitCursor)
-            
+        try:        
             txt = (self.editSearch.text().encode("utf-8")).strip()
             self.plugin.lastSearch = self.editSearch.text()
             self.plugin.limitSearchToExtent = (self.cbExtent.isChecked())
@@ -318,9 +311,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 options2 ={'viewbox':str(geom.xMinimum())+','+str(geom.yMaximum())+','+str(geom.xMaximum())+','+str(geom.yMinimum())}
             
             params = { 'q':txt, 'addressdetails':'0' }
-            r = searchJson(params, self.plugin.gnUsername, options, options2)
-            if r != None:
-                self.populateTable(r)
+            self.searchJson(params, self.plugin.gnUsername, options, options2)
                 
         except:
             for e in sys.exc_info():
@@ -328,8 +319,6 @@ class nominatim_dlg(QDockWidget, Ui_search):
                     QgsMessageLog.logMessage((str(e)), 'Extensions')
             pass
                 
-        QgsApplication.restoreOverrideCursor()
-
     def onChoose(self, row, col):
         item = self.tableResult.item(row, 0)
         self.go(item) 
