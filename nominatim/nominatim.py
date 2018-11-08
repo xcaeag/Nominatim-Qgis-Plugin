@@ -1,10 +1,10 @@
 ﻿"""
 /***************************************************************************
-Name			 	 : nominatim 
-Description          : Aide à la localisation 
-Date                 : March 2013 
+Name			 	 : nominatim
+Description          : Aide à la localisation
+Date                 : March 2013
 copyright            : (C) 2013 by AEAG
-email                : xavier.culos@eau-adour-garonne.fr 
+email                : xavier.culos@eau-adour-garonne.fr
  ***************************************************************************/
 
 /***************************************************************************
@@ -19,11 +19,11 @@ email                : xavier.culos@eau-adour-garonne.fr
 # Import the PyQt and QGIS libraries
 import os
 
-from PyQt5.QtCore import (QCoreApplication, QFileInfo, Qt, QSettings, QTranslator) 
+from PyQt5.QtCore import (QCoreApplication, QFileInfo, Qt, QSettings, QTranslator)
 from PyQt5.QtWidgets import (QAction, QApplication)
 
 from qgis.core import (QgsMessageLog)
-from qgis.utils import showPluginHelp
+from qgis.utils import (showPluginHelp)
 
 from .nominatim_dlg import nominatim_dlg
 from .nominatim_conf_dlg import nominatim_conf_dlg
@@ -53,7 +53,7 @@ class nominatim:
         locale = QSettings().value("locale/userLocale")
         self.myLocale = locale[0:2]
         # exploiter le bon dictionnaire
-        localePath = QFileInfo(os.path.realpath(__file__)).path() + "/i18n/nominatim_"+ self.myLocale + ".qm"
+        localePath = QFileInfo(os.path.realpath(__file__)).path() + "/i18n/nominatim_" + self.myLocale + ".qm"
         # initialiser le traducteur
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
@@ -97,7 +97,7 @@ class nominatim:
         self.defaultArea = s.value("nominatim/defaultArea", Qt.LeftDockWidgetArea, type=int)
         self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
 
-    def initGui(self):  
+    def initGui(self):
         self.toolBar = self.iface.pluginToolBar()
 
         self.act_config = QAction(QApplication.translate("nominatim", "Configuration", None) + "...", self.iface.mainWindow())
@@ -110,14 +110,14 @@ class nominatim:
         self.act_config.triggered.connect(self.do_config)
         self.act_nominatim_help.triggered.connect(self.do_help)
 
-        self.iface.addDockWidget( self.defaultArea, self.nominatim_dlg )
+        self.iface.addDockWidget(self.defaultArea, self.nominatim_dlg)
 
     def unload(self):
         self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_config)
         self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_nominatim_help)
         self.store()
         self.deactivate()
-        self.iface.removeDockWidget(self.nominatim_dlg)     
+        self.iface.removeDockWidget(self.nominatim_dlg)
 
     def dockVisibilityChanged(self, visible):
         try:
@@ -128,7 +128,7 @@ class nominatim:
     def dockLocationChanged(self, area):
         self.defaultArea = area
 
-    def activate(self):   
+    def activate(self):
         self.nominatim_dlg.show()
 
     def deactivate(self):
