@@ -11,7 +11,7 @@ qgisMinimumVersion=2.4
 qgisMaximumVersion=2.98
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy)
-version=0.9.4
+version=0.9.5
 
 changelog=0.9.5 : use of QgsNetworkAccessManager class for proxy support
     0.9.4 : geocoding service 'nominatim.openstreetmap.org' over https
