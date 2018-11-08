@@ -20,12 +20,11 @@ email                : xavier.culos@eau-adour-garonne.fr
 # Import the PyQt and QGIS libraries
 import os
 import sys
-from PyQt4 import QtWebKit
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
-from ui_browser import Ui_browser
+from qgis.utils import showPluginHelp
 
 from nominatim_dlg import nominatim_dlg
 from nominatim_conf_dlg import nominatim_conf_dlg
@@ -33,11 +32,8 @@ from nominatim_conf_dlg import nominatim_conf_dlg
 # Initialize Qt resources from file resources.py
 import resources
 
-_fromUtf8 = lambda s: (s.decode("utf-8").encode("latin-1")) if s else s
-_toUtf8 = lambda s: s.decode("latin-1").encode("utf-8") if s else s
 
-
-class nominatim: 
+class nominatim:
 
     def __init__(self, iface):
         # Save reference to the QGIS interface
@@ -145,10 +141,10 @@ class nominatim:
             self.nominatim_dlg.hide()
         except:
             pass
-	
+
     def zoom(self):
         pass
-	
+
     def do_config(self):
         dlg = nominatim_conf_dlg(self.iface.mainWindow(), self)
         dlg.setModal(True)
@@ -158,33 +154,4 @@ class nominatim:
         del dlg
     
     def do_help(self):
-        try:
-            self.hdialog = QDialog()
-            self.hdialog.setModal(True)
-            self.hdialog.ui = Ui_browser()
-            self.hdialog.ui.setupUi(self.hdialog)
-            
-            if os.path.isfile(self.path + "/help_" + self.myLocale + ".html"):
-                self.hdialog.ui.helpContent.setUrl(QUrl(self.path + "/help_" + self.myLocale + ".html"))
-            else:
-                self.hdialog.ui.helpContent.setUrl(QUrl(self.path + "/help.html"))
-            
-            self.hdialog.ui.helpContent.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateExternalLinks) # Handle link clicks by yourself
-            QObject.connect(self.hdialog.ui.helpContent, SIGNAL("linkClicked(QUrl)"), self.doLink)
-              
-            self.hdialog.ui.helpContent.page().currentFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOn)
-             
-            self.hdialog.show()
-            result = self.hdialog.exec_()
-            del self.hdialog
-        except:
-            for e in sys.exc_info():
-                if type(e).__name__ not in ['type', 'traceback']:
-                  QgsMessageLog.logMessage((str(e)), 'Extensions')
-            pass
-
-    def doLink(self, url):
-        if url.host() == "" :
-            self.hdialog.ui.helpContent.page().currentFrame().load(url)
-        else:
-            QDesktopServices.openUrl(url)        
+        showPluginHelp()
