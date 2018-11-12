@@ -22,6 +22,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
     def onGetHttp(self, reply):
         QgsApplication.restoreOverrideCursor()
+        self.nominatim_networkAccessManager.finished.disconnect(self.onGetHttp)
         try:
             resource = reply.readAll().data().decode('utf8')
             r = json.loads(resource)
@@ -43,6 +44,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
         #req = QNetworkRequest(QUrl(uri+"?"+urllib.urlencode(params)))
         req = QNetworkRequest(rq)
+        self.nominatim_networkAccessManager.finished.connect(self.onGetHttp)
         self.nominatim_networkAccessManager.get(req)
 
     def searchJson(self, params, user, options, options2):
@@ -145,7 +147,6 @@ class nominatim_dlg(QDockWidget, Ui_search):
             pass
         
         self.nominatim_networkAccessManager = QgsNetworkAccessManager.instance()
-        self.nominatim_networkAccessManager.finished.connect(self.onGetHttp)
 
     def cellEntered(self, row, col):
         item = self.tableResult.item(row, 0)
