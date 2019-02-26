@@ -22,33 +22,31 @@ from osgeo import osr
 
 class nominatim_dlg(QDockWidget, Ui_search):
 
-    def onGetHttp(self, reply):
-        QgsApplication.restoreOverrideCursor()
-        self.nominatim_networkAccessManager.finished.disconnect(self.onGetHttp)
-        try:
-            resource = reply.readAll().data().decode('utf8')
-            r = json.loads(resource)
-
-            if (isinstance(r, list)):
-                self.populateTable(r)
-            else:
-                self.populateTable([r])
-        except:
-            self.tableResult.clearContents()
-
     def getHttp(self, uri, params):
         QgsApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            rq = QUrl(uri)
+            q = QUrlQuery()
+            for (k, v) in params.items():
+                q.addQueryItem(k, v)
 
-        rq = QUrl(uri)
-        q = QUrlQuery()
-        for (k, v) in params.items():
-            q.addQueryItem(k, v)
+            rq.setQuery(q) 
+            req = QNetworkRequest(rq)
 
-        rq.setQuery(q) 
+            try:          
+                reply = self.nominatim_networkAccessManager.blockingGet(req)
+                resource = reply.content().data().decode('utf8')
+                r = json.loads(resource)
 
-        req = QNetworkRequest(rq)
-        self.nominatim_networkAccessManager.finished.connect(self.onGetHttp)
-        self.nominatim_networkAccessManager.get(req)
+                if (isinstance(r, list)):
+                    self.populateTable(r)
+                else:
+                    self.populateTable([r])
+            except:
+                self.tableResult.clearContents()
+
+        finally:
+            QgsApplication.restoreOverrideCursor()
 
     def searchJson(self, params, user, options, options2):
         contents = str(options).strip()
@@ -101,9 +99,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         self.plugin = plugin
         QDockWidget.__init__(self, parent)
         self.setupUi(self)
-     
-        self.defaultcursor = self.cursor
-        
+            
         self.btnApply.setIcon(QIcon(":plugins/nominatim/arrow_green.png"))
         self.btnMask.setIcon(QIcon(":plugins/nominatim/add_mask.png"))
         self.btnLayer.setIcon(QIcon(":plugins/nominatim/add_layer.png"))
