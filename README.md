@@ -4,14 +4,14 @@ Nominatim-Qgis-Plugin
 Goal
 ----
 
-Facilitate location by looking for places (cities, hydrography ...), based on Nominatim (http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy), exposed by Mapquest (http://developer.mapquest.com/web/products/open/nominatim)
+Facilitate location by looking for places (cities, hydrography ...), based on Nominatim (https://operations.osmfoundation.org/policies/nominatim/)
 
 Configuration
 -------------
 
 Specific API options for "Nominatim" service can be set as "option1=value option2=value"
 Thus, a limitation of the research in a given bounding box is configured by specifying (for example) the viewbox parameter : "viewbox=-1.85,46.35,3.90,42.50"
-The other options are described online : http://open.mapquestapi.com/nominatim/
+The other options are described online : https://wiki.openstreetmap.org/wiki/Nominatim
 
 Usage
 -----
@@ -32,13 +32,13 @@ Aide à la localisation
 Objectif
 --------
 
-Faciliter la localisation par la recherche de lieux (villes, hydrographie...), basé sur l'outil Nominatim (http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy), exposé par Mapquest (http://developer.mapquest.com/web/products/open/nominatim)
+Faciliter la localisation par la recherche de lieux (villes, hydrographie...), basé sur l'outil Nominatim (https://operations.osmfoundation.org/policies/nominatim/)
 
 Configuration
 -------------
 Les options propres à l'API REST "nominatim" peuvent être paramétrées sous la forme "option1=valeur option2=valeur"
 Ainsi, une limitation de la recherche à une étendue rectangulaire donnée se configure de la façon suivante : "viewbox=-1.85,46.35,3.90,42.50"
-Les autres options sont décrites en ligne : http://open.mapquestapi.com/nominatim/
+Les autres options sont décrites en ligne : https://wiki.openstreetmap.org/wiki/Nominatim
 
 Usage
 -----
