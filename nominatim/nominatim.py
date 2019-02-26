@@ -53,7 +53,8 @@ class nominatim:
         locale = QSettings().value("locale/userLocale")
         self.myLocale = locale[0:2]
         # exploiter le bon dictionnaire
-        localePath = QFileInfo(os.path.realpath(__file__)).path() + "/i18n/nominatim_" + self.myLocale + ".qm"
+        localePath = QFileInfo(os.path.realpath(__file__)).path() +\
+            "/i18n/nominatim_" + self.myLocale + ".qm"
         # initialiser le traducteur
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
@@ -100,11 +101,17 @@ class nominatim:
     def initGui(self):
         self.toolBar = self.iface.pluginToolBar()
 
-        self.act_config = QAction(QApplication.translate("nominatim", "Configuration", None) + "...", self.iface.mainWindow())
-        self.act_nominatim_help = QAction(QApplication.translate("nominatim", "Help", None) + "...", self.iface.mainWindow())
+        self.act_config = QAction(QApplication.translate("nominatim", "Configuration", None) +
+                                  "...", self.iface.mainWindow())
+        self.act_nominatim_help = QAction(QApplication.translate("nominatim", "Help", None) +
+                                          "...", self.iface.mainWindow())
 
-        self.iface.addPluginToMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_config)
-        self.iface.addPluginToMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_nominatim_help)
+        self.iface.addPluginToMenu(
+            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_config)
+        self.iface.addPluginToMenu(
+            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_nominatim_help)
 
         # Add actions to the toolbar
         self.act_config.triggered.connect(self.do_config)
@@ -113,8 +120,12 @@ class nominatim:
         self.iface.addDockWidget(self.defaultArea, self.nominatim_dlg)
 
     def unload(self):
-        self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_config)
-        self.iface.removePluginMenu("&"+QApplication.translate("nominatim", "OSM place search", None) + "...", self.act_nominatim_help)
+        self.iface.removePluginMenu(
+            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_config)
+        self.iface.removePluginMenu(
+            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_nominatim_help)
         self.store()
         self.deactivate()
         self.iface.removeDockWidget(self.nominatim_dlg)

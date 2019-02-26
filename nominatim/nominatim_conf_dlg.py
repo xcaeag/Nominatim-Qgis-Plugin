@@ -4,6 +4,7 @@ from .conf_dialog import Ui_ConfDialog
 
 from PyQt5.QtWidgets import (QDialog)
 
+
 class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
 
     def __init__(self, parent, plugin):
@@ -12,7 +13,7 @@ class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
         QDialog.__init__(self, parent)
         self.setupUi(self)
         self.defaultcursor = self.cursor
-        
+
         self.buttonBox.accepted.connect(self.onAccepted)
         self.buttonBox.rejected.connect(self.onRejected)
         self.btnBox.released.connect(self.onExBox)
@@ -28,25 +29,24 @@ class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
 
     def onExBox(self):
         self.editOptions.setText(self.editOptions.text() + ' ' + self.btnBox.text())
-        
+
     def onExCountry(self):
         self.editOptions.setText(self.editOptions.text() + ' ' + self.btnCountry.text())
-        
+
     def onExMax(self):
         self.editOptions.setText(self.editOptions.text() + ' ' + self.btnMax.text())
-        
-        
+
     def onAccepted(self):
         self.plugin.projects = []
 
-        self.plugin.localiseOnStartup = self.cbStart.isChecked();
-        self.plugin.singleLayer = self.singleLayerCbx.isChecked();
-        
+        self.plugin.localiseOnStartup = self.cbStart.isChecked()
+        self.plugin.singleLayer = self.singleLayerCbx.isChecked()
+
         try:
             self.plugin.gnOptions = self.editOptions.text()
         except:
             pass
-        
+
         self.plugin.store()
 
     def onRejected(self):
