@@ -4,15 +4,17 @@ from .dockwidget import Ui_search
 from . import resources
 
 from PyQt5.QtCore import (Qt, QVariant, QUrl, QUrlQuery)
-from PyQt5.QtWidgets import (QDockWidget, QHeaderView, QApplication, QTableWidgetItem)
+from PyQt5.QtWidgets import (QDockWidget, QHeaderView, QApplication,
+                             QTableWidgetItem)
 from PyQt5.QtGui import (QIcon, QColor)
 from PyQt5.QtNetwork import QNetworkRequest
 
-from qgis.core import (QgsProject, QgsApplication, QgsCoordinateReferenceSystem,
+from qgis.core import (QgsProject, QgsApplication,
+                       QgsCoordinateReferenceSystem,
                        QgsCoordinateTransform, QgsMessageLog, QgsGeometry,
                        QgsRectangle, QgsVectorLayer,
                        QgsField, QgsFields, QgsFeature,
-                       QgsLineSymbol, QgsProject, QgsWkbTypes, QgsUnitTypes,
+                       QgsLineSymbol, QgsWkbTypes, QgsUnitTypes,
                        QgsNetworkAccessManager)
 
 from qgis.gui import (QgsRubberBand)
@@ -203,7 +205,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
             poFD.AddFieldDefn(oFLD)
 
             ogrFeature = ogr.Feature(poFD)
-            wkt = "POINT("+str(lng)+" "+str(lat)+")"
+            wkt = "POINT({} {})".format(lng, lat)
             ogrGeom = ogr.CreateGeometryFromWkt(wkt)
         else:
             try:
@@ -219,9 +221,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
                 ogrFeature = ogr.Feature(poFD)
                 if wkt is None:
-                    wkt = "POLYGON(("+str(bbox[2])+" "+str(bbox[0])+", "+str(bbox[2])+" " +\
-                          str(bbox[1])+", "+str(bbox[3])+" "+str(bbox[1])+", "+str(bbox[3])+" " +\
-                          str(bbox[0])+", "+str(bbox[2])+" "+str(bbox[0])+"))"
+                    wkt = "POLYGON(({b[2]} {b[0]}, {b[2]} {b[1]}, {b[3]} {b[1]}, {b[3]} {b[0]}, {b[2]} {b[0]}))".format(b=bbox)
 
                 ogrGeom = ogr.CreateGeometryFromWkt(wkt)
             except:
@@ -237,7 +237,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 poFD.AddFieldDefn(oFLD)
 
                 ogrFeature = ogr.Feature(poFD)
-                wkt = "POINT("+str(lng)+" "+str(lat)+")"
+                wkt = "POINT({} {})".format(lng, lat)
                 ogrGeom = ogr.CreateGeometryFromWkt(wkt)
 
         mapCrsWKT = self.plugin.canvas.mapSettings().destinationCrs().toWkt()
@@ -249,12 +249,12 @@ class nominatim_dlg(QDockWidget, Ui_search):
         trsf = osr.CoordinateTransformation(sourceSRS, targetSRS)
         try:
             ogrGeom.Transform(trsf)
-        except TypeError as e:
+        except TypeError:
             QgsMessageLog.logMessage("Nominatim - transformation error. Check map projection.",
                                      "Extensions")
 
         ogrFeature.SetGeometry(ogrGeom)
-        ogrFeature.SetFID(int(idx+1))
+        ogrFeature.SetFID(int(idx + 1))
         ogrFeature.SetField(str('id'), str(id))
         ogrFeature.SetField(str('name'), name)
 
@@ -277,7 +277,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         self.tableResult.setRowCount(len(r))
         for item in r:
             self.populateRow(item, idx)
-            idx = idx+1
+            idx = idx + 1
 
     def doLocalize(self):
         try:
@@ -311,10 +311,8 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 targetCrs.createFromSrid(4326)
                 xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
                 geom = xform.transform(self.plugin.canvas.extent())
-                options2 = {'viewbox': str(geom.xMinimum()) + ',' +
-                            str(geom.yMaximum()) + ',' +
-                            str(geom.xMaximum()) + ',' +
-                            str(geom.yMinimum())}
+                vb = "{},{},{},{}".format(geom.xMinimum(), geom.yMaximum(), geom.xMaximum(), geom.yMinimum())
+                options2 = {'viewbox': vb}
 
             params = {'q': txt, 'addressdetails': '0'}
             self.searchJson(params, self.plugin.gnUsername, options, options2)
@@ -339,7 +337,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
         if (ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint):
             mapextent = self.plugin.canvas.extent()
-            ww = mapextent.width()/100
+            ww = mapextent.width() / 100
             mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
 
             x = geom.boundingBox().center().x()
@@ -351,7 +349,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
             if mapcrs.mapUnits() == QgsUnitTypes.DistanceDegrees:
                 ww = 0.0005
 
-            bbox = QgsRectangle(x-10*ww, y-10*ww, x+10*ww, y+10*ww)
+            bbox = QgsRectangle(x - 10 * ww, y - 10 * ww, x + 10 * ww, y + 10 * ww)
             return bbox
         else:
             bbox = geom.boundingBox()
@@ -414,10 +412,10 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
                 toCrs = self.plugin.canvas.mapSettings().destinationCrs()
 
-                l = max(geom.boundingBox().width(), geom.boundingBox().height())
+                larg = max(geom.boundingBox().width(), geom.boundingBox().height())
                 x = geom.boundingBox().center().x()
                 y = geom.boundingBox().center().y()
-                rect = QgsRectangle(x-l, y-l, x+l, y+l)  # geom.boundingBox()
+                rect = QgsRectangle(x-larg, y-larg, x+larg, y+larg)  # geom.boundingBox()
                 rect.scale(4)
                 mask = QgsGeometry.fromRect(rect)
 
@@ -430,7 +428,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
                 fields = QgsFields()
                 fields.append(QgsField("id", QVariant.String))
-                fields.append(QgsField("name",  QVariant.String))
+                fields.append(QgsField("name", QVariant.String))
                 fet = QgsFeature()
                 fet.initAttributes(2)
                 fet.setGeometry(mask)
@@ -466,7 +464,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
         fields = QgsFields()
         fields.append(QgsField("id", QVariant.String))
-        fields.append(QgsField("name",  QVariant.String))
+        fields.append(QgsField("name", QVariant.String))
         fet = QgsFeature()
         fet.initAttributes(2)
         fet.setFields(fields)
