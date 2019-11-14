@@ -21,10 +21,7 @@ import os
 
 from PyQt5.QtCore import (QCoreApplication, QFileInfo, Qt, QSettings, QTranslator)
 from PyQt5.QtWidgets import (QAction, QApplication)
-
-from qgis.core import (QgsMessageLog)
 from qgis.utils import (showPluginHelp)
-
 from .nominatim_dlg import nominatim_dlg
 from .nominatim_conf_dlg import nominatim_conf_dlg
 

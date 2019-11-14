@@ -11,15 +11,14 @@ from PyQt5.QtNetwork import QNetworkRequest
 
 from qgis.core import (QgsProject, QgsApplication,
                        QgsCoordinateReferenceSystem,
-                       QgsCoordinateTransform, QgsMessageLog, QgsGeometry,
-                       QgsRectangle, QgsVectorLayer,
+                       QgsCoordinateTransform, QgsMessageLog,
+                       QgsGeometry, QgsRectangle, QgsVectorLayer,
                        QgsField, QgsFields, QgsFeature,
                        QgsLineSymbol, QgsWkbTypes, QgsUnitTypes,
                        QgsNetworkAccessManager)
 
 from qgis.gui import (QgsRubberBand)
 from osgeo import ogr
-from osgeo import osr
 
 
 class nominatim_dlg(QDockWidget, Ui_search):
@@ -240,19 +239,6 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 wkt = "POINT({} {})".format(lng, lat)
                 ogrGeom = ogr.CreateGeometryFromWkt(wkt)
 
-        mapCrsWKT = self.plugin.canvas.mapSettings().destinationCrs().toWkt()
-
-        sourceSRS = osr.SpatialReference()
-        sourceSRS.ImportFromEPSG(4326)
-        targetSRS = osr.SpatialReference()
-        targetSRS.ImportFromWkt(str(mapCrsWKT))
-        trsf = osr.CoordinateTransformation(sourceSRS, targetSRS)
-        try:
-            ogrGeom.Transform(trsf)
-        except TypeError:
-            QgsMessageLog.logMessage("Nominatim - transformation error. Check map projection.",
-                                     "Extensions")
-
         ogrFeature.SetGeometry(ogrGeom)
         ogrFeature.SetFID(int(idx + 1))
         ogrFeature.SetField(str('id'), str(id))
@@ -284,8 +270,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
             # center
             bbox = self.plugin.canvas.extent()
             sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
-            targetCrs = QgsCoordinateReferenceSystem()
-            targetCrs.createFromSrid(4326)
+            targetCrs = QgsCoordinateReferenceSystem(4326)
             xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             bbox = xform.transform(bbox)
 
@@ -331,9 +316,20 @@ class nominatim_dlg(QDockWidget, Ui_search):
             self.go(item)
             break
 
+    def transform(self, geom):
+        sourceSRS = QgsCoordinateReferenceSystem(4326)
+        mapCrs = self.plugin.canvas.mapSettings().destinationCrs()
+        trsf = QgsCoordinateTransform(sourceSRS, mapCrs, QgsProject.instance())
+        try:
+            geom.transform(trsf)
+        except TypeError:
+            QgsMessageLog.logMessage("Nominatim - transformation error. Check map projection.",
+                                     "Extensions")
+
     def getBBox(self, item):
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        self.transform(geom)
 
         if (ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint):
             mapextent = self.plugin.canvas.extent()
@@ -360,6 +356,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
     def showItem(self, item):
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        self.transform(geom)
 
         if (ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint):
             self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PointGeometry)
@@ -399,6 +396,8 @@ class nominatim_dlg(QDockWidget, Ui_search):
         ogrFeature = item.data(Qt.UserRole)
         layerName = "OSM "+ogrFeature.GetFieldAsString('id')
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        self.transform(geom)
+
         if (geom.type() == QgsWkbTypes.PolygonGeometry):
             try:
                 try:
@@ -410,6 +409,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
             except:
                 geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+                self.transform(geom)
                 toCrs = self.plugin.canvas.mapSettings().destinationCrs()
 
                 larg = max(geom.boundingBox().width(), geom.boundingBox().height())
@@ -461,6 +461,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
     def doLayer(self, item):
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        self.transform(geom)
 
         fields = QgsFields()
         fields.append(QgsField("id", QVariant.String))
@@ -519,6 +520,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 pr = vl.dataProvider()
                 # ajout de champs
                 pr.addAttributes(fields.toList())
+                vl.setCrs(self.plugin.canvas.mapSettings().destinationCrs())
 
             QgsProject.instance().addMapLayer(vl)
 

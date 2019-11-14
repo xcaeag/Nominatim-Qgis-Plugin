@@ -1,19 +1,13 @@
-# This file contains metadata for your plugin. Beginning
-# with version 1.8 this is the preferred way to supply information about a
-# plugin. The current method of embedding metadata in __init__.py will
-# be supported until version 2.0
-
-# This file should be included when you package your plugin.
-
 [general]
 name=OSM place search
 qgisMinimumVersion=3.6
 qgisMaximumVersion=3.98
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (https://operations.osmfoundation.org/policies/nominatim/)
-version=1.2.6
+version=1.2.7
 
 changelog=
+    1.2.7 : fix #11 - pb projection 
     1.2.6 : fix #10
     1.2.5 : fix https://github.com/xcaeag/Nominatim-Qgis-Plugin/issues/8
     1.2.4 : use of QgsNetworkAccessManager rather than requests
