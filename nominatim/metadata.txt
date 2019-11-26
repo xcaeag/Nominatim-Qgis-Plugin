@@ -4,9 +4,10 @@ qgisMinimumVersion=3.6
 qgisMaximumVersion=3.98
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (https://operations.osmfoundation.org/policies/nominatim/)
-version=1.2.7
+version=1.2.8
 
 changelog=
+    1.2.8 : pull #12 - Russian translation, thanks to Petr Tsymbarovich (https://github.com/mentaljam)
     1.2.7 : fix #11 - pb projection 
     1.2.6 : fix #10
     1.2.5 : fix https://github.com/xcaeag/Nominatim-Qgis-Plugin/issues/8
