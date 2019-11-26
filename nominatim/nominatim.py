@@ -51,7 +51,7 @@ class nominatim:
         self.myLocale = locale[0:2]
         # exploiter le bon dictionnaire
         localePath = QFileInfo(os.path.realpath(__file__)).path() +\
-            "/i18n/nominatim_" + self.myLocale + ".qm"
+            "/i18n/" + self.myLocale + ".qm"
         # initialiser le traducteur
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
