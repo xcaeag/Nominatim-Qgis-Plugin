@@ -48,15 +48,20 @@ class nominatim:
 
         # récup langue par défaut
         locale = QSettings().value("locale/userLocale")
-        self.myLocale = locale[0:2]
-        # exploiter le bon dictionnaire
-        localePath = QFileInfo(os.path.realpath(__file__)).path() +\
-            "/i18n/" + self.myLocale + ".qm"
-        # initialiser le traducteur
-        if QFileInfo(localePath).exists():
-            self.translator = QTranslator()
-            self.translator.load(localePath)
-            QCoreApplication.installTranslator(self.translator)
+        try:
+            self.myLocale = locale[0:2]
+            
+            # exploiter le bon dictionnaire
+            localePath = QFileInfo(os.path.realpath(__file__)).path() +\
+                "/i18n/" + self.myLocale + ".qm"
+            # initialiser le traducteur
+            if QFileInfo(localePath).exists():
+                self.translator = QTranslator()
+                self.translator.load(localePath)
+                QCoreApplication.installTranslator(self.translator)
+        except:
+            # no translation
+            pass
 
         try:
             self.nominatim_dlg

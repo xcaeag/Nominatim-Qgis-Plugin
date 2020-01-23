@@ -43,7 +43,10 @@ class nominatim_dlg(QDockWidget, Ui_search):
                     self.populateTable(r)
                 else:
                     self.populateTable([r])
-            except:
+            except Exception as e:
+                for m in e.args:
+                    QgsMessageLog.logMessage(m, 'Extensions')
+
                 self.tableResult.clearContents()
 
         finally:
@@ -317,8 +320,10 @@ class nominatim_dlg(QDockWidget, Ui_search):
             break
 
     def transform(self, geom):
+        QgsMessageLog.logMessage("Nominatim - transform", "Extensions")
         sourceSRS = QgsCoordinateReferenceSystem(4326)
         mapCrs = self.plugin.canvas.mapSettings().destinationCrs()
+        QgsMessageLog.logMessage("Nominatim - {}".format(mapCrs.srsid()), "Extensions")
         trsf = QgsCoordinateTransform(sourceSRS, mapCrs, QgsProject.instance())
         try:
             geom.transform(trsf)
