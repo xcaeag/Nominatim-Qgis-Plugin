@@ -2,11 +2,10 @@
 """
 from .conf_dialog import Ui_ConfDialog
 
-from PyQt5.QtWidgets import (QDialog)
+from PyQt5.QtWidgets import QDialog
 
 
 class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
-
     def __init__(self, parent, plugin):
         self.plugin = plugin
         self.parent = parent
@@ -28,13 +27,13 @@ class nominatim_conf_dlg(QDialog, Ui_ConfDialog):
             pass
 
     def onExBox(self):
-        self.editOptions.setText(self.editOptions.text() + ' ' + self.btnBox.text())
+        self.editOptions.setText(self.editOptions.text() + " " + self.btnBox.text())
 
     def onExCountry(self):
-        self.editOptions.setText(self.editOptions.text() + ' ' + self.btnCountry.text())
+        self.editOptions.setText(self.editOptions.text() + " " + self.btnCountry.text())
 
     def onExMax(self):
-        self.editOptions.setText(self.editOptions.text() + ' ' + self.btnMax.text())
+        self.editOptions.setText(self.editOptions.text() + " " + self.btnMax.text())
 
     def onAccepted(self):
         self.plugin.projects = []

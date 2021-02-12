@@ -28,7 +28,7 @@ Nominatim-Qgis-Plugin (Français)
 ================================
 
 Aide à la localisation
-	
+
 Objectif
 --------
 
@@ -49,5 +49,3 @@ Usage
 - Un double-clic sur l'item (ou bouton zoomer) se positionne sur le lieu en question.
 
 Vous pouvez également créer une couche (ou enrichir les couches 'OSM polygon', 'line' ou 'point', selon la configuration) à partir de l'objet sélectionné, un masque (issue du plugin mask si il est actif) lorsqu'il s'agit d'un polygone.
-
-

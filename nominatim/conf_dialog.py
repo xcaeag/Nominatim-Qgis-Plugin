@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'conf_dialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
@@ -8,13 +6,16 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_ConfDialog(object):
     def setupUi(self, ConfDialog):
         ConfDialog.setObjectName("ConfDialog")
         ConfDialog.setWindowModality(QtCore.Qt.WindowModal)
         ConfDialog.setEnabled(True)
         ConfDialog.resize(547, 192)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(ConfDialog.sizePolicy().hasHeightForWidth())
@@ -74,7 +75,9 @@ class Ui_ConfDialog(object):
         self.verticalLayout_2.addWidget(self.singleLayerCbx)
         self.buttonBox = QtWidgets.QDialogButtonBox(ConfDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout_2.addWidget(self.buttonBox)
         self.label.setBuddy(self.editOptions)
@@ -88,16 +91,30 @@ class Ui_ConfDialog(object):
 
     def retranslateUi(self, ConfDialog):
         _translate = QtCore.QCoreApplication.translate
-        ConfDialog.setWindowTitle(_translate("ConfDialog", "OSM place search plugin configuration"))
-        self.label_3.setText(_translate("ConfDialog", "<p>Nominatim Search from <a href=\"http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy\" target=\"_blank\">OSM</a> <img src=\"http://www.openstreetmap.org/assets/osm_logo.png\">, data © OpenStreetMap contributors - <a href=\"www.openstreetmap.org/copyright\">copyright</a></p>"))
+        ConfDialog.setWindowTitle(
+            _translate("ConfDialog", "OSM place search plugin configuration")
+        )
+        self.label_3.setText(
+            _translate(
+                "ConfDialog",
+                '<p>Nominatim Search from <a href="http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy" target="_blank">OSM</a> <img src="http://www.openstreetmap.org/assets/osm_logo.png">, data © OpenStreetMap contributors - <a href="www.openstreetmap.org/copyright">copyright</a></p>',
+            )
+        )
         self.label.setText(_translate("ConfDialog", "Options : "))
         self.lbEx.setText(_translate("ConfDialog", "Ex : "))
         self.btnBox.setToolTip(_translate("ConfDialog", "Click here to pick exemple"))
         self.btnBox.setText(_translate("ConfDialog", "viewbox=-1.85,46.35,3.90,42.50"))
-        self.btnCountry.setToolTip(_translate("ConfDialog", "Click here to pick exemple"))
+        self.btnCountry.setToolTip(
+            _translate("ConfDialog", "Click here to pick exemple")
+        )
         self.btnCountry.setText(_translate("ConfDialog", "countrycodes=FR"))
         self.btnMax.setToolTip(_translate("ConfDialog", "Click here to pick exemple"))
         self.btnMax.setText(_translate("ConfDialog", "limit=20"))
-        self.cbStart.setText(_translate("ConfDialog", "Find the nearest location at startup"))
-        self.singleLayerCbx.setText(_translate("ConfDialog", "Create a layer for each object (new layer functionality)"))
-
+        self.cbStart.setText(
+            _translate("ConfDialog", "Find the nearest location at startup")
+        )
+        self.singleLayerCbx.setText(
+            _translate(
+                "ConfDialog", "Create a layer for each object (new layer functionality)"
+            )
+        )

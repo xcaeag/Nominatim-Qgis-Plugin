@@ -42,92 +42,92 @@
       <message><source>shelter</source><translation>abris</translation></message>
       <message><source>residential</source><translation>résidentielle</translation></message>
       <!-- TODO
-      
+
       -->
 
     </context>
-    
+
     <context>
       <name>search</name>
 
       <message>
         <source>OSM place search...</source>
         <translation>Recherche de lieux OSM</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Limit search to...</source>
         <translation>Limiter la recherche à...</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Name contains...</source>
         <translation>Nom contenant...</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Double-click to zoom</source>
         <translation>Double-click pour zoomer</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Results</source>
         <translation>Résultats de la recherche</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Name</source>
         <translation>Libellé</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Class</source>
         <translation>Classification</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Infos</source>
         <translation>Informations complémentaires</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Initial view</source>
         <translation>Vue initiale</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Zoom</source>
         <translation>Zoomer</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Close</source>
         <translation>Fermer</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Limit to extent</source>
         <translation>Limiter la recherche à la zone visible</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>Where am I ?</source>
         <translation>Où suis-je ?</translation>
-      </message>    
-      
+      </message>
+
       <message>
         <source>add object in new layer</source>
         <translation>placer l'objet dans une nouvelle couche</translation>
-      </message>    
-      
+      </message>
+
 
       <message>
         <source>create mask from selected object</source>
         <translation>créer un masque à partir de cet objet</translation>
-      </message>    
-      
+      </message>
+
     </context>
-    
+
     <context>
       <name>ConfDialog</name>
       <message>
@@ -151,5 +151,5 @@
         <translation>Créer une nouvelle couche par objet (sur action 'nouvelle couche')</translation>
       </message>
     </context>
-    
+
 </TS>

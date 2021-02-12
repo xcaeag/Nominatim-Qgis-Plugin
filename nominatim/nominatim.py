@@ -19,15 +19,14 @@ email                : xavier.culos@eau-adour-garonne.fr
 # Import the PyQt and QGIS libraries
 import os
 
-from PyQt5.QtCore import (QCoreApplication, QFileInfo, Qt, QSettings, QTranslator)
-from PyQt5.QtWidgets import (QAction, QApplication)
-from qgis.utils import (showPluginHelp)
+from PyQt5.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
+from PyQt5.QtWidgets import QAction, QApplication
+from qgis.utils import showPluginHelp
 from .nominatim_dlg import nominatim_dlg
 from .nominatim_conf_dlg import nominatim_conf_dlg
 
 
 class nominatim:
-
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
@@ -50,10 +49,14 @@ class nominatim:
         locale = QSettings().value("locale/userLocale")
         try:
             self.myLocale = locale[0:2]
-            
+
             # exploiter le bon dictionnaire
-            localePath = QFileInfo(os.path.realpath(__file__)).path() +\
-                "/i18n/" + self.myLocale + ".qm"
+            localePath = (
+                QFileInfo(os.path.realpath(__file__)).path()
+                + "/i18n/"
+                + self.myLocale
+                + ".qm"
+            )
             # initialiser le traducteur
             if QFileInfo(localePath).exists():
                 self.translator = QTranslator()
@@ -90,30 +93,42 @@ class nominatim:
     def read(self):
         s = QSettings()
 
-        self.localiseOnStartup = s.value("nominatim/localiseOnStartup", (False), type=bool)
-        self.limitSearchToExtent = s.value("nominatim/limitSearchToExtent", (False), type=bool)
+        self.localiseOnStartup = s.value(
+            "nominatim/localiseOnStartup", (False), type=bool
+        )
+        self.limitSearchToExtent = s.value(
+            "nominatim/limitSearchToExtent", (False), type=bool
+        )
         self.dlgPosX = s.value("nominatim/dlgPosX", 100, type=int)
         self.dlgPosY = s.value("nominatim/dlgPosY", 100, type=int)
-        self.lastSearch = s.value("nominatim/lastSearch", '')
-        self.gnOptions = s.value("nominatim/gnOptions", '')
-        self.gnUsername = s.value("nominatim/gnUsername", '')
-        self.defaultArea = s.value("nominatim/defaultArea", Qt.LeftDockWidgetArea, type=int)
+        self.lastSearch = s.value("nominatim/lastSearch", "")
+        self.gnOptions = s.value("nominatim/gnOptions", "")
+        self.gnUsername = s.value("nominatim/gnUsername", "")
+        self.defaultArea = s.value(
+            "nominatim/defaultArea", Qt.LeftDockWidgetArea, type=int
+        )
         self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
 
     def initGui(self):
         self.toolBar = self.iface.pluginToolBar()
 
-        self.act_config = QAction(QApplication.translate("nominatim", "Configuration", None) +
-                                  "...", self.iface.mainWindow())
-        self.act_nominatim_help = QAction(QApplication.translate("nominatim", "Help", None) +
-                                          "...", self.iface.mainWindow())
+        self.act_config = QAction(
+            QApplication.translate("nominatim", "Configuration", None) + "...",
+            self.iface.mainWindow(),
+        )
+        self.act_nominatim_help = QAction(
+            QApplication.translate("nominatim", "Help", None) + "...",
+            self.iface.mainWindow(),
+        )
 
         self.iface.addPluginToMenu(
-            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
-            self.act_config)
+            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_config,
+        )
         self.iface.addPluginToMenu(
-            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
-            self.act_nominatim_help)
+            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_nominatim_help,
+        )
 
         # Add actions to the toolbar
         self.act_config.triggered.connect(self.do_config)
@@ -123,11 +138,13 @@ class nominatim:
 
     def unload(self):
         self.iface.removePluginMenu(
-            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
-            self.act_config)
+            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_config,
+        )
         self.iface.removePluginMenu(
-            "&"+QApplication.translate("nominatim", "OSM place search", None) + "...",
-            self.act_nominatim_help)
+            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            self.act_nominatim_help,
+        )
         self.store()
         self.deactivate()
         self.iface.removeDockWidget(self.nominatim_dlg)

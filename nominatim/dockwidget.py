@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'W:\GitHub\Nominatim-Qgis-Plugin\nominatim\dockwidget.ui'
 #
 # Created by: PyQt5 UI code generator 5.6
@@ -8,21 +6,28 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+
 class Ui_search(object):
     def setupUi(self, search):
         search.setObjectName("search")
         search.resize(296, 345)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(search.sizePolicy().hasHeightForWidth())
         search.setSizePolicy(sizePolicy)
         search.setMinimumSize(QtCore.QSize(266, 345))
         self.dockWidgetContents = QtWidgets.QWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.dockWidgetContents.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.dockWidgetContents.sizePolicy().hasHeightForWidth()
+        )
         self.dockWidgetContents.setSizePolicy(sizePolicy)
         self.dockWidgetContents.setObjectName("dockWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.dockWidgetContents)
@@ -35,7 +40,9 @@ class Ui_search(object):
         self.label.setObjectName("label")
         self.horizontalLayout_4.addWidget(self.label)
         self.editSearch = QtWidgets.QLineEdit(self.dockWidgetContents)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.editSearch.sizePolicy().hasHeightForWidth())
@@ -48,7 +55,9 @@ class Ui_search(object):
         self.btnSearch = QtWidgets.QToolButton(self.dockWidgetContents)
         self.btnSearch.setObjectName("btnSearch")
         self.horizontalLayout_4.addWidget(self.btnSearch)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_4.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -61,7 +70,9 @@ class Ui_search(object):
         self.horizontalLayout.addWidget(self.btnLocalize)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.tableResult = QtWidgets.QTableWidget(self.dockWidgetContents)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableResult.sizePolicy().hasHeightForWidth())
@@ -98,7 +109,13 @@ class Ui_search(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.btnHelp = QtWidgets.QToolButton(self.dockWidgetContents)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:/Documents and Settings/culos/.qgis/python/plugins/atlas/about.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap(
+                "C:/Documents and Settings/culos/.qgis/python/plugins/atlas/about.png"
+            ),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.btnHelp.setIcon(icon)
         self.btnHelp.setObjectName("btnHelp")
         self.horizontalLayout_2.addWidget(self.btnHelp)
@@ -114,7 +131,9 @@ class Ui_search(object):
         self.btnApply.setFocusPolicy(QtCore.Qt.TabFocus)
         self.btnApply.setAcceptDrops(False)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("arrow_green.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(
+            QtGui.QPixmap("arrow_green.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off
+        )
         self.btnApply.setIcon(icon1)
         self.btnApply.setCheckable(False)
         self.btnApply.setAutoExclusive(False)
@@ -157,7 +176,8 @@ class Ui_search(object):
         self.btnHelp.setText(_translate("search", "..."))
         self.btnLayer.setToolTip(_translate("search", "add object in new layer"))
         self.btnLayer.setText(_translate("search", "Layer"))
-        self.btnMask.setToolTip(_translate("search", "create mask from selected object"))
+        self.btnMask.setToolTip(
+            _translate("search", "create mask from selected object")
+        )
         self.btnMask.setText(_translate("search", "Mask"))
         self.btnApply.setText(_translate("search", "Zoom"))
-
