@@ -186,10 +186,10 @@
       <attribute name="verticalHeaderVisible">
        <bool>false</bool>
       </attribute>
-      <attribute name="verticalHeaderDefaultSectionSize">
-       <number>17</number>
-      </attribute>
       <attribute name="verticalHeaderMinimumSectionSize">
+       <number>18</number>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
        <number>18</number>
       </attribute>
       <attribute name="verticalHeaderShowSortIndicator" stdset="0">
@@ -218,10 +218,6 @@
        <widget class="QToolButton" name="btnHelp">
         <property name="text">
          <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset>
-          <normaloff>C:/Documents and Settings/culos/.qgis/python/plugins/atlas/about.png</normaloff>C:/Documents and Settings/culos/.qgis/python/plugins/atlas/about.png</iconset>
         </property>
        </widget>
       </item>
@@ -267,7 +263,7 @@
         </property>
         <property name="icon">
          <iconset>
-          <normaloff>arrow_green.png</normaloff>arrow_green.png</iconset>
+          <normaloff>../resources/arrow_green.png</normaloff>../resources/arrow_green.png</iconset>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -299,8 +295,6 @@
   <tabstop>btnMask</tabstop>
   <tabstop>btnApply</tabstop>
  </tabstops>
- <resources>
-  <include location="../timemanager/resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

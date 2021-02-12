@@ -3,9 +3,10 @@
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog
 
-from menu_from_project.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 
 FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/conf_dialog.ui")
+
 
 class nominatim_conf_dlg(QDialog, FORM_CLASS):
     def __init__(self, parent, plugin):
