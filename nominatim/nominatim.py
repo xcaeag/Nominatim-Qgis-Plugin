@@ -132,7 +132,9 @@ class nominatim:
 
         # Add actions to the toolbar
         self.act_config.triggered.connect(self.do_config)
-        self.act_nominatim_help.triggered.connect(self.do_help)
+        self.act_nominatim_help.triggered.connect(
+            lambda: showPluginHelp(filename="doc/index")
+        )
 
         self.iface.addDockWidget(self.defaultArea, self.nominatim_dlg)
 
@@ -178,5 +180,3 @@ class nominatim:
         dlg.exec_()
         del dlg
 
-    def do_help(self):
-        showPluginHelp()

@@ -3,26 +3,34 @@
 from .dockwidget import Ui_search
 from . import resources
 
-from PyQt5.QtCore import (Qt, QVariant, QUrl, QUrlQuery)
-from PyQt5.QtWidgets import (QDockWidget, QHeaderView, QApplication,
-                             QTableWidgetItem)
-from PyQt5.QtGui import (QIcon, QColor)
+from PyQt5.QtCore import Qt, QVariant, QUrl, QUrlQuery
+from PyQt5.QtWidgets import QDockWidget, QHeaderView, QApplication, QTableWidgetItem
+from PyQt5.QtGui import QIcon, QColor
 from PyQt5.QtNetwork import QNetworkRequest
 
-from qgis.core import (QgsProject, QgsApplication,
-                       QgsCoordinateReferenceSystem,
-                       QgsCoordinateTransform, QgsMessageLog,
-                       QgsGeometry, QgsRectangle, QgsVectorLayer,
-                       QgsField, QgsFields, QgsFeature,
-                       QgsLineSymbol, QgsWkbTypes, QgsUnitTypes,
-                       QgsNetworkAccessManager)
+from qgis.core import (
+    QgsProject,
+    QgsApplication,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsMessageLog,
+    QgsGeometry,
+    QgsRectangle,
+    QgsVectorLayer,
+    QgsField,
+    QgsFields,
+    QgsFeature,
+    QgsLineSymbol,
+    QgsWkbTypes,
+    QgsUnitTypes,
+    QgsNetworkAccessManager,
+)
 
-from qgis.gui import (QgsRubberBand)
+from qgis.gui import QgsRubberBand
 from osgeo import ogr
 
 
 class nominatim_dlg(QDockWidget, Ui_search):
-
     def getHttp(self, uri, params):
         QgsApplication.setOverrideCursor(Qt.WaitCursor)
         try:
@@ -36,16 +44,16 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
             try:
                 reply = self.nominatim_networkAccessManager.blockingGet(req)
-                resource = reply.content().data().decode('utf8')
+                resource = reply.content().data().decode("utf8")
                 r = json.loads(resource)
 
-                if (isinstance(r, list)):
+                if isinstance(r, list):
                     self.populateTable(r)
                 else:
                     self.populateTable([r])
             except Exception as e:
                 for m in e.args:
-                    QgsMessageLog.logMessage(m, 'Extensions')
+                    QgsMessageLog.logMessage(m, "Extensions")
 
                 self.tableResult.clearContents()
 
@@ -54,32 +62,45 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
     def searchJson(self, params, user, options, options2):
         contents = str(options).strip()
-        items = contents.split(' ')
+        items = contents.split(" ")
 
         for (k, v) in options2.items():
-            if k in ['viewbox']:
+            if k in ["viewbox"]:
                 params["bounded"] = "1"
             params[k] = v
 
         pairs = []
         for item in items:
-            pair = item.split('=', 1)
-            if (pair != [''] and pair != [] and len(pair) > 1):
+            pair = item.split("=", 1)
+            if pair != [""] and pair != [] and len(pair) > 1:
                 pairs.append(pair)
 
         for (k, v) in pairs:
-            if k in ['viewbox', 'countrycodes', 'limit', 'exclude_place_ids', 'addressdetails',
-                     'exclude_place_ids', 'bounded', 'routewidth',
-                     'osm_type', 'osm_id'] and not(k in options2.keys()):
+            if (
+                k
+                in [
+                    "viewbox",
+                    "countrycodes",
+                    "limit",
+                    "exclude_place_ids",
+                    "addressdetails",
+                    "exclude_place_ids",
+                    "bounded",
+                    "routewidth",
+                    "osm_type",
+                    "osm_id",
+                ]
+                and not (k in options2.keys())
+            ):
                 params[k] = v
 
-            if k in ['viewbox']:
+            if k in ["viewbox"]:
                 params["bounded"] = "1"
 
         params["polygon_text"] = "1"
         params["format"] = "json"
 
-        uri = 'https://nominatim.openstreetmap.org/search'
+        uri = "https://nominatim.openstreetmap.org/search"
 
         self.getHttp(uri, params)
 
@@ -91,6 +112,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
     """
      Gestion de l'évènement "leave", afin d'effacer l'objet sélectionné en sortie du dock
     """
+
     def eventFilter(self, obj, event):
         typ = event.type()
         if typ == event.Leave:
@@ -133,7 +155,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
         self.currentExtent = self.plugin.canvas.extent()
 
-        self.tableResult.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.tableResult.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeToContents
+        )
 
         try:
             self.editSearch.setText(self.plugin.lastSearch)
@@ -145,7 +169,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 self.doLocalize()
         except Exception as e:
             for m in e.args:
-                QgsMessageLog.logMessage(m, 'Extensions')
+                QgsMessageLog.logMessage(m, "Extensions")
             pass
 
         self.nominatim_networkAccessManager = QgsNetworkAccessManager.instance()
@@ -170,40 +194,40 @@ class nominatim_dlg(QDockWidget, Ui_search):
             self.doMask(item)
 
     def populateRow(self, item, idx):
-        id = item['place_id']
-        name = item['display_name']
+        id = item["place_id"]
+        name = item["display_name"]
 
         try:
-            className = QApplication.translate("nominatim", item['class'], None)
+            className = QApplication.translate("nominatim", item["class"], None)
         except:
             className = ""
 
         try:
-            typeName = QApplication.translate("nominatim", item['type'], None)
+            typeName = QApplication.translate("nominatim", item["type"], None)
         except:
             typeName = ""
 
         try:
-            wkt = item['geotext']
+            wkt = item["geotext"]
         except:
             wkt = None
 
         try:
-            osm_type = item['osm_type']
+            osm_type = item["osm_type"]
         except:
             osm_type = None
 
         bbox = {}
         if osm_type == "node":
-            lat = item['lat']
-            lng = item['lon']
+            lat = item["lat"]
+            lng = item["lon"]
 
             poFD = ogr.FeatureDefn("Point")
             poFD.SetGeomType(ogr.wkbPoint)
 
-            oFLD = ogr.FieldDefn('id', ogr.OFTString)
+            oFLD = ogr.FieldDefn("id", ogr.OFTString)
             poFD.AddFieldDefn(oFLD)
-            oFLD = ogr.FieldDefn('name', ogr.OFTString)
+            oFLD = ogr.FieldDefn("name", ogr.OFTString)
             poFD.AddFieldDefn(oFLD)
 
             ogrFeature = ogr.Feature(poFD)
@@ -211,31 +235,33 @@ class nominatim_dlg(QDockWidget, Ui_search):
             ogrGeom = ogr.CreateGeometryFromWkt(wkt)
         else:
             try:
-                bbox = item['boundingbox']
+                bbox = item["boundingbox"]
 
                 poFD = ogr.FeatureDefn("Rectangle")
                 poFD.SetGeomType(ogr.wkbPolygon)
 
-                oFLD = ogr.FieldDefn('id', ogr.OFTString)
+                oFLD = ogr.FieldDefn("id", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn('name', ogr.OFTString)
+                oFLD = ogr.FieldDefn("name", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
 
                 ogrFeature = ogr.Feature(poFD)
                 if wkt is None:
-                    wkt = "POLYGON(({b[2]} {b[0]}, {b[2]} {b[1]}, {b[3]} {b[1]}, {b[3]} {b[0]}, {b[2]} {b[0]}))".format(b=bbox)
+                    wkt = "POLYGON(({b[2]} {b[0]}, {b[2]} {b[1]}, {b[3]} {b[1]}, {b[3]} {b[0]}, {b[2]} {b[0]}))".format(
+                        b=bbox
+                    )
 
                 ogrGeom = ogr.CreateGeometryFromWkt(wkt)
             except:
-                lat = item['lat']
-                lng = item['lon']
+                lat = item["lat"]
+                lng = item["lon"]
 
                 poFD = ogr.FeatureDefn("Point")
                 poFD.SetGeomType(ogr.wkbPoint)
 
-                oFLD = ogr.FieldDefn('id', ogr.OFTString)
+                oFLD = ogr.FieldDefn("id", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn('name', ogr.OFTString)
+                oFLD = ogr.FieldDefn("name", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
 
                 ogrFeature = ogr.Feature(poFD)
@@ -244,8 +270,8 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
         ogrFeature.SetGeometry(ogrGeom)
         ogrFeature.SetFID(int(idx + 1))
-        ogrFeature.SetField(str('id'), str(id))
-        ogrFeature.SetField(str('name'), name)
+        ogrFeature.SetField(str("id"), str(id))
+        ogrFeature.SetField(str("name"), name)
 
         item = QTableWidgetItem(name)
         item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
@@ -277,19 +303,23 @@ class nominatim_dlg(QDockWidget, Ui_search):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             bbox = xform.transform(bbox)
 
-            params = {"lon": str(bbox.center().x()), "lat": str(bbox.center().y()), "zoom": "10"}
+            params = {
+                "lon": str(bbox.center().x()),
+                "lat": str(bbox.center().y()),
+                "zoom": "10",
+            }
             self.findNearbyJSON(params, self.plugin.gnUsername, self.plugin.gnOptions)
 
         except Exception as e:
             for m in e.args:
-                QgsMessageLog.logMessage(m, 'Extensions')
+                QgsMessageLog.logMessage(m, "Extensions")
             pass
 
     def onReturnPressed(self):
         try:
             txt = self.editSearch.text().strip()
             self.plugin.lastSearch = self.editSearch.text()
-            self.plugin.limitSearchToExtent = (self.cbExtent.isChecked())
+            self.plugin.limitSearchToExtent = self.cbExtent.isChecked()
             options = self.plugin.gnOptions
 
             options2 = {}
@@ -297,17 +327,21 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
                 targetCrs = QgsCoordinateReferenceSystem()
                 targetCrs.createFromSrid(4326)
-                xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
+                xform = QgsCoordinateTransform(
+                    sourceCrs, targetCrs, QgsProject.instance()
+                )
                 geom = xform.transform(self.plugin.canvas.extent())
-                vb = "{},{},{},{}".format(geom.xMinimum(), geom.yMaximum(), geom.xMaximum(), geom.yMinimum())
-                options2 = {'viewbox': vb}
+                vb = "{},{},{},{}".format(
+                    geom.xMinimum(), geom.yMaximum(), geom.xMaximum(), geom.yMinimum()
+                )
+                options2 = {"viewbox": vb}
 
-            params = {'q': txt, 'addressdetails': '0'}
+            params = {"q": txt, "addressdetails": "0"}
             self.searchJson(params, self.plugin.gnUsername, options, options2)
 
         except Exception as e:
             for m in e.args:
-                QgsMessageLog.logMessage(m, 'Extensions')
+                QgsMessageLog.logMessage(m, "Extensions")
             pass
 
     def onChoose(self, row, col):
@@ -328,15 +362,16 @@ class nominatim_dlg(QDockWidget, Ui_search):
         try:
             geom.transform(trsf)
         except TypeError:
-            QgsMessageLog.logMessage("Nominatim - transformation error. Check map projection.",
-                                     "Extensions")
+            QgsMessageLog.logMessage(
+                "Nominatim - transformation error. Check map projection.", "Extensions"
+            )
 
     def getBBox(self, item):
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
-        if (ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint):
+        if ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint:
             mapextent = self.plugin.canvas.extent()
             ww = mapextent.width() / 100
             mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
@@ -354,8 +389,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
             return bbox
         else:
             bbox = geom.boundingBox()
-            rubberRect = QgsRectangle(bbox.xMinimum(), bbox.yMinimum(),
-                                      bbox.xMaximum(), bbox.yMaximum())
+            rubberRect = QgsRectangle(
+                bbox.xMinimum(), bbox.yMinimum(), bbox.xMaximum(), bbox.yMaximum()
+            )
             return rubberRect
 
     def showItem(self, item):
@@ -363,7 +399,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
-        if (ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint):
+        if ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint:
             self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PointGeometry)
             self.rubber.setColor(QColor(50, 50, 255, 100))
             self.rubber.setIcon(self.rubber.ICON_CIRCLE)
@@ -375,7 +411,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
             if self.plugin.canvas.extent().contains(geom.boundingBox()):
                 pass
             else:
-                geom = geom.intersection(QgsGeometry.fromRect(self.plugin.canvas.extent()))
+                geom = geom.intersection(
+                    QgsGeometry.fromRect(self.plugin.canvas.extent())
+                )
 
             self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PolygonGeometry)
             self.rubber.setColor(QColor(50, 50, 255, 100))
@@ -399,18 +437,18 @@ class nominatim_dlg(QDockWidget, Ui_search):
         mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
 
         ogrFeature = item.data(Qt.UserRole)
-        layerName = "OSM "+ogrFeature.GetFieldAsString('id')
+        layerName = "OSM " + ogrFeature.GetFieldAsString("id")
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
-        if (geom.type() == QgsWkbTypes.PolygonGeometry):
+        if geom.type() == QgsWkbTypes.PolygonGeometry:
             try:
                 try:
                     from mask import aeag_mask
                 except:
                     from mask_plugin import aeag_mask
 
-                aeag_mask.do(mapcrs, {geom}, "Mask "+layerName)
+                aeag_mask.do(mapcrs, {geom}, "Mask " + layerName)
 
             except:
                 geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
@@ -420,13 +458,17 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 larg = max(geom.boundingBox().width(), geom.boundingBox().height())
                 x = geom.boundingBox().center().x()
                 y = geom.boundingBox().center().y()
-                rect = QgsRectangle(x-larg, y-larg, x+larg, y+larg)  # geom.boundingBox()
+                rect = QgsRectangle(
+                    x - larg, y - larg, x + larg, y + larg
+                )  # geom.boundingBox()
                 rect.scale(4)
                 mask = QgsGeometry.fromRect(rect)
 
                 mask = mask.difference(geom)
 
-                maskLayer = QgsVectorLayer("MultiPolygon", "Mask "+layerName, "memory")
+                maskLayer = QgsVectorLayer(
+                    "MultiPolygon", "Mask " + layerName, "memory"
+                )
                 maskLayer.setCrs(toCrs)
                 QgsProject.instance().addMapLayer(maskLayer)
                 pr = maskLayer.dataProvider()
@@ -438,8 +480,8 @@ class nominatim_dlg(QDockWidget, Ui_search):
                 fet.initAttributes(2)
                 fet.setGeometry(mask)
                 fet.setFields(fields)
-                fet.setAttribute("id", (ogrFeature.GetFieldAsString('id')))
-                fet.setAttribute("name", (ogrFeature.GetFieldAsString('name')))
+                fet.setAttribute("id", (ogrFeature.GetFieldAsString("id")))
+                fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
 
                 pr.addAttributes(fields.toList())
 
@@ -458,8 +500,9 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
                 layerTree = QgsProject.instance().layerTreeRoot().findLayer(maskLayer)
                 if layerTree:
-                    self.plugin.iface.layerTreeView().layerTreeModel()\
-                        .refreshLayerLegend(layerTree)  # Refresh legend
+                    self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(
+                        layerTree
+                    )  # Refresh legend
 
             self.go(item)
 
@@ -475,8 +518,8 @@ class nominatim_dlg(QDockWidget, Ui_search):
         fet.initAttributes(2)
         fet.setFields(fields)
         fet.setGeometry(geom)
-        fet.setAttribute("id", (ogrFeature.GetFieldAsString('id')))
-        fet.setAttribute("name", (ogrFeature.GetFieldAsString('name')))
+        fet.setAttribute("id", (ogrFeature.GetFieldAsString("id")))
+        fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
 
         vl = None
         if not self.plugin.singleLayer:
@@ -511,7 +554,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
                 QgsProject.instance().addMapLayer(vl)
         else:
-            layerName = "OSM "+ogrFeature.GetFieldAsString('id')
+            layerName = "OSM " + ogrFeature.GetFieldAsString("id")
 
             # creer une nouvelle couche si n'existe pas encore
             if geom.type() == QgsWkbTypes.PolygonGeometry:
@@ -530,7 +573,7 @@ class nominatim_dlg(QDockWidget, Ui_search):
             QgsProject.instance().addMapLayer(vl)
 
         if vl is not None:
-            vl.setProviderEncoding('UTF-8')
+            vl.setProviderEncoding("UTF-8")
             vl.startEditing()
             pr.addFeatures([fet])
             vl.commitChanges()
@@ -540,7 +583,8 @@ class nominatim_dlg(QDockWidget, Ui_search):
 
             layerTree = QgsProject.instance().layerTreeRoot().findLayer(vl)
             if layerTree:
-                self.plugin.iface.layerTreeView()\
-                    .layerTreeModel().refreshLayerLegend(layerTree)  # Refresh legend
+                self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(
+                    layerTree
+                )  # Refresh legend
 
             self.go(item, False)
