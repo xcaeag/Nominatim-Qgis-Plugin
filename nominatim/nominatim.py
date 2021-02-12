@@ -179,4 +179,3 @@ class nominatim:
         dlg.show()
         dlg.exec_()
         del dlg
-
