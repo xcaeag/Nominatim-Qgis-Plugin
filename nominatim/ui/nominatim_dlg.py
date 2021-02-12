@@ -1,12 +1,10 @@
 ﻿import json
 
-from .dockwidget import Ui_search
-from . import resources
-
-from PyQt5.QtCore import Qt, QVariant, QUrl, QUrlQuery
-from PyQt5.QtWidgets import QDockWidget, QHeaderView, QApplication, QTableWidgetItem
-from PyQt5.QtGui import QIcon, QColor
-from PyQt5.QtNetwork import QNetworkRequest
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery
+from qgis.PyQt.QtWidgets import QDockWidget, QHeaderView, QApplication, QTableWidgetItem
+from qgis.PyQt.QtGui import QIcon, QColor
+from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from qgis.core import (
     QgsProject,
@@ -29,8 +27,11 @@ from qgis.core import (
 from qgis.gui import QgsRubberBand
 from osgeo import ogr
 
+from menu_from_project.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 
-class nominatim_dlg(QDockWidget, Ui_search):
+FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/dockwidget.ui")
+
+class nominatim_dlg(QDockWidget, FORM_CLASS):
     def getHttp(self, uri, params):
         QgsApplication.setOverrideCursor(Qt.WaitCursor)
         try:
