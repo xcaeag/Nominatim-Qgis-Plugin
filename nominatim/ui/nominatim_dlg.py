@@ -433,7 +433,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             renderer = vl.renderer()
             s = renderer.symbol()
             s.setOpacity(0.85)
-            
+
             # mise a jour etendue de la couche
             vl.updateExtents()
 
@@ -467,5 +467,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
             except:
                 maskLayer = self.doLayer(item)
-                maskLayer.loadNamedStyle(str(DIR_PLUGIN_ROOT / "resources" / "mask.qml"))
+                maskLayer.loadNamedStyle(
+                    str(DIR_PLUGIN_ROOT / "resources" / "mask.qml")
+                )
                 maskLayer.triggerRepaint()

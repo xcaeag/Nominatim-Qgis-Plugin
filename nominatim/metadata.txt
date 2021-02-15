@@ -7,7 +7,7 @@ about=Based on OSM data, Nominatim online tool (https://operations.osmfoundation
 version=1.2.9
 
 changelog=
-    1.2.9: code réorganization, deprecation warning deleted
+    1.2.9: code reorganization, deprecation warning deleted, improved mask style
     1.2.8 : pull #12 - Russian translation, thanks to Petr Tsymbarovich (https://github.com/mentaljam)
     1.2.7 : fix #11 - pb projection
     1.2.6 : fix #10
