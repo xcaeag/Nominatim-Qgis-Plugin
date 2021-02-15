@@ -30,6 +30,12 @@ You can also create a layer (or enrich the layers 'OSM polygon', 'line' or 'poin
 
 The data returned by the nominatim service  (https://operations.osmfoundation.org/policies/nominatim/) are available under the ODbL license (Open Database License - https://opendatacommons.org/) and comes from https://www.openstreetmap.org (« © OpenStreetMap contributors ».)
 
+### Other plugins
+
+For integration into "locators", use the "Nominatim locator filter" ! (https://plugins.qgis.org/plugins/nominatim_locator_filter/)
+
+To download OSM data : QuickOSM (https://plugins.qgis.org/plugins/QuickOSM/)
+
 ## Nominatim-Qgis-Plugin (Français) :fr:
 
 Aide à la localisation
@@ -57,3 +63,9 @@ Vous pouvez également créer une couche (ou enrichir les couches 'OSM polygon',
 ### Les données
 
 Les données retournées par le service nominatim (https://operations.osmfoundation.org/policies/nominatim/) sont disponibles sous la licence ODbL (Open Database License - https://opendatacommons.org/) et proviennent de https://www.openstreetmap.org (« © les contributeurs d’OpenStreetMap ».)
+
+### D'autres plugins
+
+Pour une intégration dans les "localisateurs", utilisez le "Nominatim locator filter" ! (https://plugins.qgis.org/plugins/nominatim_locator_filter/)
+
+Pour télécharger des données OSM : QuickOSM (https://plugins.qgis.org/plugins/QuickOSM/)
