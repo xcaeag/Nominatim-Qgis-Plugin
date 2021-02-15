@@ -63,6 +63,9 @@
     <message><source>station</source><translation>gare</translation></message>
     <message><source>shelter</source><translation>abris</translation></message>
     <message><source>residential</source><translation>résidentielle</translation></message>
+    <message><source>administrative</source><translation>administratif</translation></message>
+    <message><source>house</source><translation>bâtis</translation></message>
+    <message><source>post_office</source><translation>poste</translation></message>
 
     <message>
         <location filename="../nominatim.py" line="121"/>

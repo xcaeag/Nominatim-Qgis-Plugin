@@ -1,5 +1,4 @@
 import json
-from functools import lru_cache
 
 from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery
 from qgis.PyQt.QtNetwork import QNetworkRequest
@@ -15,7 +14,6 @@ from qgis.core import (
 
 limitSearchToExtent = False
 gnOptions = ""
-
 
 def getHttp(uri, params):
     nam = QgsNetworkAccessManager.instance()
