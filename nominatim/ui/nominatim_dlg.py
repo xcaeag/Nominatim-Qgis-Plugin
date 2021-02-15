@@ -304,7 +304,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             # center
             bbox = self.plugin.canvas.extent()
             sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
-            targetCrs = QgsCoordinateReferenceSystem(4326)
+            targetCrs = QgsCoordinateReferenceSystem("EPSG:4326")
             xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             bbox = xform.transform(bbox)
 
@@ -330,8 +330,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             options2 = {}
             if self.plugin.limitSearchToExtent:
                 sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
-                targetCrs = QgsCoordinateReferenceSystem()
-                targetCrs.createFromSrid(4326)
+                targetCrs = QgsCoordinateReferenceSystem("EPSG:4326")
                 xform = QgsCoordinateTransform(
                     sourceCrs, targetCrs, QgsProject.instance()
                 )
@@ -359,7 +358,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             break
 
     def transform(self, geom):
-        sourceSRS = QgsCoordinateReferenceSystem(4326)
+        sourceSRS = QgsCoordinateReferenceSystem("EPSG:4326")
         mapCrs = self.plugin.canvas.mapSettings().destinationCrs()
         trsf = QgsCoordinateTransform(sourceSRS, mapCrs, QgsProject.instance())
         try:
