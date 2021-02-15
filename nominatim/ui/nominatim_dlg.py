@@ -134,6 +134,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.btnApply.setIcon(QIcon(str(DIR_PLUGIN_ROOT / "resources/arrow_green.png")))
         self.btnMask.setIcon(QIcon(str(DIR_PLUGIN_ROOT / "resources/add_mask.png")))
         self.btnLayer.setIcon(QIcon(str(DIR_PLUGIN_ROOT / "resources/add_layer.png")))
+        self.btnHelp.setIcon(QIcon(QgsApplication.iconPath("mActionHelpContents.svg")))
 
         self.tableResult.installEventFilter(self)  # cf. eventFilter method
         self.tableResult.cellDoubleClicked.connect(self.onChoose)
@@ -143,6 +144,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.btnSearch.clicked.connect(self.onReturnPressed)
         self.btnApply.clicked.connect(self.onApply)
         self.btnHelp.clicked.connect(lambda: showPluginHelp(filename="../doc/index"))
+
         self.btnLocalize.clicked.connect(self.doLocalize)
         self.btnMask.clicked.connect(self.onMask)
         self.btnLayer.clicked.connect(self.onLayer)
