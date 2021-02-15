@@ -5,6 +5,7 @@ from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery
 from qgis.PyQt.QtWidgets import QDockWidget, QHeaderView, QApplication, QTableWidgetItem
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtNetwork import QNetworkRequest
+from qgis.utils import showPluginHelp
 
 from qgis.core import (
     QgsProject,
@@ -27,9 +28,10 @@ from qgis.core import (
 from qgis.gui import QgsRubberBand
 from osgeo import ogr
 
-from menu_from_project.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 
 FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/dockwidget.ui")
+
 
 class nominatim_dlg(QDockWidget, FORM_CLASS):
     def getHttp(self, uri, params):
@@ -129,9 +131,9 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         QDockWidget.__init__(self, parent)
         self.setupUi(self)
 
-        self.btnApply.setIcon(QIcon(":plugins/nominatim/arrow_green.png"))
-        self.btnMask.setIcon(QIcon(":plugins/nominatim/add_mask.png"))
-        self.btnLayer.setIcon(QIcon(":plugins/nominatim/add_layer.png"))
+        self.btnApply.setIcon(QIcon(str(DIR_PLUGIN_ROOT / "resources/arrow_green.png")))
+        self.btnMask.setIcon(QIcon(str(DIR_PLUGIN_ROOT / "resources/add_mask.png")))
+        self.btnLayer.setIcon(QIcon(str(DIR_PLUGIN_ROOT / "resources/add_layer.png")))
 
         self.tableResult.installEventFilter(self)  # cf. eventFilter method
         self.tableResult.cellDoubleClicked.connect(self.onChoose)
@@ -140,7 +142,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.editSearch.returnPressed.connect(self.onReturnPressed)
         self.btnSearch.clicked.connect(self.onReturnPressed)
         self.btnApply.clicked.connect(self.onApply)
-        self.btnHelp.clicked.connect(self.plugin.do_help)
+        self.btnHelp.clicked.connect(lambda: showPluginHelp(filename="../doc/index"))
         self.btnLocalize.clicked.connect(self.doLocalize)
         self.btnMask.clicked.connect(self.onMask)
         self.btnLayer.clicked.connect(self.onLayer)

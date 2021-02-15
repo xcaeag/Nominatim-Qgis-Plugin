@@ -19,11 +19,11 @@ email                : xavier.culos@eau-adour-garonne.fr
 # Import the PyQt and QGIS libraries
 import os
 
-from PyQt5.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
-from PyQt5.QtWidgets import QAction, QApplication
+from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
+from qgis.PyQt.QtWidgets import QAction, QApplication
 from qgis.utils import showPluginHelp
-from .nominatim_dlg import nominatim_dlg
-from .nominatim_conf_dlg import nominatim_conf_dlg
+from .ui.nominatim_dlg import nominatim_dlg
+from .ui.nominatim_conf_dlg import nominatim_conf_dlg
 
 
 class nominatim:
