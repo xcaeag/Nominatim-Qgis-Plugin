@@ -357,10 +357,8 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             break
 
     def transform(self, geom):
-        QgsMessageLog.logMessage("Nominatim - transform", "Extensions")
         sourceSRS = QgsCoordinateReferenceSystem(4326)
         mapCrs = self.plugin.canvas.mapSettings().destinationCrs()
-        QgsMessageLog.logMessage("Nominatim - {}".format(mapCrs.srsid()), "Extensions")
         trsf = QgsCoordinateTransform(sourceSRS, mapCrs, QgsProject.instance())
         try:
             geom.transform(trsf)

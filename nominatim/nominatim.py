@@ -25,6 +25,8 @@ from qgis.utils import showPluginHelp
 from .ui.nominatim_dlg import nominatim_dlg
 from .ui.nominatim_conf_dlg import nominatim_conf_dlg
 
+from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+
 
 class nominatim:
     def __init__(self, iface):
@@ -57,6 +59,7 @@ class nominatim:
                 + self.myLocale
                 + ".qm"
             )
+
             # initialiser le traducteur
             if QFileInfo(localePath).exists():
                 self.translator = QTranslator()
@@ -77,6 +80,10 @@ class nominatim:
             self.nominatim_dlg.editSearch.setText(self.lastSearch)
         except:
             pass
+
+    @staticmethod
+    def tr(message):
+        return QCoreApplication.translate("nominatim", message)
 
     def store(self):
         s = QSettings()
@@ -113,20 +120,20 @@ class nominatim:
         self.toolBar = self.iface.pluginToolBar()
 
         self.act_config = QAction(
-            QApplication.translate("nominatim", "Configuration", None) + "...",
+            self.tr("Configuration") + "...",
             self.iface.mainWindow(),
         )
         self.act_nominatim_help = QAction(
-            QApplication.translate("nominatim", "Help", None) + "...",
+            self.tr("Help") + "...",
             self.iface.mainWindow(),
         )
 
         self.iface.addPluginToMenu(
-            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            "&" + self.tr(__title__),
             self.act_config,
         )
         self.iface.addPluginToMenu(
-            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            "&" + self.tr(__title__),
             self.act_nominatim_help,
         )
 
@@ -140,11 +147,11 @@ class nominatim:
 
     def unload(self):
         self.iface.removePluginMenu(
-            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            "&" + self.tr(__title__),
             self.act_config,
         )
         self.iface.removePluginMenu(
-            "&" + QApplication.translate("nominatim", "OSM place search", None) + "...",
+            "&" + self.tr(__title__),
             self.act_nominatim_help,
         )
         self.store()
