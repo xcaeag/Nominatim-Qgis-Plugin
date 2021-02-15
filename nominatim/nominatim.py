@@ -24,6 +24,7 @@ from qgis.PyQt.QtWidgets import QAction, QApplication
 from qgis.utils import showPluginHelp
 from .ui.nominatim_dlg import nominatim_dlg
 from .ui.nominatim_conf_dlg import nominatim_conf_dlg
+
 # from .osmLocatorFilter import OsmLocatorFilter
 
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
@@ -80,11 +81,11 @@ class Nominatim:
         except:
             pass
 
-        #self.filter = OsmLocatorFilter(self.iface, self)
-        #self.filter.resultProblem.connect(self.showLocatorProblem)
-        #self.iface.registerLocatorFilter(self.filter)
+        # self.filter = OsmLocatorFilter(self.iface, self)
+        # self.filter.resultProblem.connect(self.showLocatorProblem)
+        # self.iface.registerLocatorFilter(self.filter)
 
-    #def showLocatorProblem(self, err):
+    # def showLocatorProblem(self, err):
     #    self.iface.messageBar().pushWarning(
     #        "{} - {}".format(self.tr("Error during OSM search"), err)
     #    )

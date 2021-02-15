@@ -2,7 +2,12 @@
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery
-from qgis.PyQt.QtWidgets import QDockWidget, QHeaderView, QApplication, QTableWidgetItem
+from qgis.PyQt.QtWidgets import (
+    QDockWidget,
+    QHeaderView,
+    QApplication,
+    QTableWidgetItem,
+)
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.utils import showPluginHelp
@@ -240,7 +245,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 self.populateTable(r)
             else:
                 self.tableResult.clearContents()
-                
+
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(m, "Extensions")
@@ -353,79 +358,6 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.plugin.canvas.refresh()
         self.showItem(item)
 
-    def doMask(self, item):
-        mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
-
-        ogrFeature = item.data(Qt.UserRole)
-        layerName = "OSM " + ogrFeature.GetFieldAsString("id")
-        geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
-        self.transform(geom)
-
-        if geom.type() == QgsWkbTypes.PolygonGeometry:
-            try:
-                try:
-                    from mask import aeag_mask
-                except:
-                    from mask_plugin import aeag_mask
-
-                aeag_mask.do(mapcrs, {geom}, "Mask " + layerName)
-
-            except:
-                geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
-                self.transform(geom)
-                toCrs = self.plugin.canvas.mapSettings().destinationCrs()
-
-                larg = max(geom.boundingBox().width(), geom.boundingBox().height())
-                x = geom.boundingBox().center().x()
-                y = geom.boundingBox().center().y()
-                rect = QgsRectangle(
-                    x - larg, y - larg, x + larg, y + larg
-                )  # geom.boundingBox()
-                rect.scale(4)
-                mask = QgsGeometry.fromRect(rect)
-
-                mask = mask.difference(geom)
-
-                maskLayer = QgsVectorLayer(
-                    "MultiPolygon", "Mask " + layerName, "memory"
-                )
-                maskLayer.setCrs(toCrs)
-                QgsProject.instance().addMapLayer(maskLayer)
-                pr = maskLayer.dataProvider()
-
-                fields = QgsFields()
-                fields.append(QgsField("id", QVariant.String))
-                fields.append(QgsField("name", QVariant.String))
-                fet = QgsFeature()
-                fet.initAttributes(2)
-                fet.setGeometry(mask)
-                fet.setFields(fields)
-                fet.setAttribute("id", (ogrFeature.GetFieldAsString("id")))
-                fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
-
-                pr.addAttributes(fields.toList())
-
-                maskLayer.startEditing()
-                pr.addFeatures([fet])
-                maskLayer.commitChanges()
-                maskLayer.updateExtents()
-
-                # transparence, epaisseur
-                renderer = maskLayer.renderer()
-                s = renderer.symbol()
-                s.setOpacity(0.90)
-                s.setColor(QColor(255, 255, 255))
-                if isinstance(s, QgsLineSymbol):
-                    s.setWidth(0)
-
-                layerTree = QgsProject.instance().layerTreeRoot().findLayer(maskLayer)
-                if layerTree:
-                    self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(
-                        layerTree
-                    )  # Refresh legend
-
-            self.go(item)
-
     def doLayer(self, item):
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
@@ -498,6 +430,10 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             pr.addFeatures([fet])
             vl.commitChanges()
 
+            renderer = vl.renderer()
+            s = renderer.symbol()
+            s.setOpacity(0.85)
+            
             # mise a jour etendue de la couche
             vl.updateExtents()
 
@@ -508,3 +444,28 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 )  # Refresh legend
 
             self.go(item, False)
+
+            return vl
+
+    def doMask(self, item):
+        mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
+
+        ogrFeature = item.data(Qt.UserRole)
+        layerName = "OSM " + ogrFeature.GetFieldAsString("id")
+        geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        self.transform(geom)
+
+        if geom.type() == QgsWkbTypes.PolygonGeometry:
+            try:
+                try:
+                    from mask import aeag_mask
+                except:
+                    from mask_plugin import aeag_mask
+
+                aeag_mask.do(mapcrs, {geom}, "Mask " + layerName)
+                self.go(item)
+
+            except:
+                maskLayer = self.doLayer(item)
+                maskLayer.loadNamedStyle(str(DIR_PLUGIN_ROOT / "resources" / "mask.qml"))
+                maskLayer.triggerRepaint()

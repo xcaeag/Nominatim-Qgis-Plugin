@@ -11,7 +11,7 @@ from qgis.core import (
     QgsLocatorFilter,
     QgsLocatorResult,
     QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform
+    QgsCoordinateTransform,
 )
 
 from qgis.PyQt.QtCore import pyqtSignal
@@ -46,10 +46,7 @@ class OsmLocatorFilter(QgsLocatorFilter):
             if len(search.strip()) < 4 or search[-1] not in (" ", "\n"):
                 return
 
-            r = tools.osmSearch(
-                self.iface.mapCanvas(),
-                search.strip()
-            )
+            r = tools.osmSearch(self.iface.mapCanvas(), search.strip())
 
             for item in r:
                 wkt = item["geotext"]
@@ -63,7 +60,9 @@ class OsmLocatorFilter(QgsLocatorFilter):
 
                 sourceCrs = QgsCoordinateReferenceSystem("EPSG:4326")
                 targetCrs = self.plugin.canvas.mapSettings().destinationCrs()
-                xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
+                xform = QgsCoordinateTransform(
+                    sourceCrs, targetCrs, QgsProject.instance()
+                )
 
                 try:
                     bbox = item["boundingbox"]

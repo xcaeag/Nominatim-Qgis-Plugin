@@ -4,10 +4,18 @@ from functools import lru_cache
 from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
-from qgis.core import QgsProject, QgsApplication, QgsMessageLog, QgsNetworkAccessManager, QgsCoordinateReferenceSystem, QgsCoordinateTransform
+from qgis.core import (
+    QgsProject,
+    QgsApplication,
+    QgsMessageLog,
+    QgsNetworkAccessManager,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+)
 
 limitSearchToExtent = False
 gnOptions = ""
+
 
 def getHttp(uri, params):
     nam = QgsNetworkAccessManager.instance()
@@ -40,7 +48,8 @@ def getHttp(uri, params):
 
     return None
 
-def osmSearchJson(params, options, options2):  
+
+def osmSearchJson(params, options, options2):
     contents = str(options).strip()
     items = contents.split(" ")
 
@@ -84,10 +93,12 @@ def osmSearchJson(params, options, options2):
 
     return getHttp(uri, params)
 
+
 def osmFindNearbyJSON(params, options):
     uri = "https://nominatim.openstreetmap.org/reverse"
     params["format"] = "json"
     return getHttp(uri, params)
+
 
 def osmSearch(canvas, txt):
     global gnOptions
@@ -99,9 +110,7 @@ def osmSearch(canvas, txt):
         if limitSearchToExtent:
             sourceCrs = canvas.mapSettings().destinationCrs()
             targetCrs = QgsCoordinateReferenceSystem("EPSG:4326")
-            xform = QgsCoordinateTransform(
-                sourceCrs, targetCrs, QgsProject.instance()
-            )
+            xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             geom = xform.transform(canvas.extent())
             vb = "{},{},{},{}".format(
                 geom.xMinimum(), geom.yMaximum(), geom.xMaximum(), geom.yMinimum()
