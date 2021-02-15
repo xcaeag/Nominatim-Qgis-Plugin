@@ -43,7 +43,7 @@
         <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
-        <string notr="true">&lt;p&gt;Nominatim Search from &lt;a href=&quot;http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy&quot; target=&quot;_blank&quot;&gt;OSM&lt;/a&gt; &lt;img src=&quot;http://www.openstreetmap.org/assets/osm_logo.png&quot;&gt;, data © OpenStreetMap contributors - &lt;a href=&quot;www.openstreetmap.org/copyright&quot;&gt;copyright&lt;/a&gt;&lt;/p&gt;</string>
+        <string notr="true">&lt;p&gt;Nominatim Search from &lt;a href=&quot;https://operations.osmfoundation.org/policies/nominatim/&quot; target=&quot;_blank&quot;&gt;OSM&lt;/a&gt; &lt;img src=&quot;http://www.openstreetmap.org/assets/osm_logo.png&quot;&gt;, data © OpenStreetMap contributors - &lt;a href=&quot;http://www.openstreetmap.org/copyright&quot;&gt;copyright&lt;/a&gt;&lt;/p&gt;</string>
        </property>
        <property name="openExternalLinks">
         <bool>true</bool>

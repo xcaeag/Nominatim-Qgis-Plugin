@@ -4,6 +4,7 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog
 
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+from nominatim.logic import tools
 
 FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/conf_dialog.ui")
 
@@ -25,7 +26,7 @@ class nominatim_conf_dlg(QDialog, FORM_CLASS):
         self.cbStart.setChecked(self.plugin.localiseOnStartup)
         self.singleLayerCbx.setChecked(self.plugin.singleLayer)
         try:
-            self.editOptions.setText((self.plugin.gnOptions))
+            self.editOptions.setText(tools.gnOptions)
         except:
             pass
 
@@ -45,7 +46,7 @@ class nominatim_conf_dlg(QDialog, FORM_CLASS):
         self.plugin.singleLayer = self.singleLayerCbx.isChecked()
 
         try:
-            self.plugin.gnOptions = self.editOptions.text()
+            tools.gnOptions = self.editOptions.text()
         except:
             pass
 

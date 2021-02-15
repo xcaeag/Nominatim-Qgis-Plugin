@@ -24,11 +24,13 @@ from qgis.PyQt.QtWidgets import QAction, QApplication
 from qgis.utils import showPluginHelp
 from .ui.nominatim_dlg import nominatim_dlg
 from .ui.nominatim_conf_dlg import nominatim_conf_dlg
+# from .osmLocatorFilter import OsmLocatorFilter
 
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+from nominatim.logic import tools
 
 
-class nominatim:
+class Nominatim:
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
@@ -39,9 +41,6 @@ class nominatim:
         self.dlgPosY = 100
         self.lastSearch = ""
         self.localiseOnStartup = True
-        self.limitSearchToExtent = False
-        self.gnOptions = ""
-        self.gnUsername = ""
         self.defaultArea = Qt.LeftDockWidgetArea
         self.singleLayer = True
 
@@ -81,6 +80,15 @@ class nominatim:
         except:
             pass
 
+        #self.filter = OsmLocatorFilter(self.iface, self)
+        #self.filter.resultProblem.connect(self.showLocatorProblem)
+        #self.iface.registerLocatorFilter(self.filter)
+
+    #def showLocatorProblem(self, err):
+    #    self.iface.messageBar().pushWarning(
+    #        "{} - {}".format(self.tr("Error during OSM search"), err)
+    #    )
+
     @staticmethod
     def tr(message):
         return QCoreApplication.translate("nominatim", message)
@@ -88,12 +96,11 @@ class nominatim:
     def store(self):
         s = QSettings()
         s.setValue("nominatim/localiseOnStartup", self.localiseOnStartup)
-        s.setValue("nominatim/limitSearchToExtent", self.limitSearchToExtent)
+        s.setValue("nominatim/limitSearchToExtent", tools.limitSearchToExtent)
         s.setValue("nominatim/dlgPosX", self.dlgPosX)
         s.setValue("nominatim/dlgPosY", self.dlgPosY)
         s.setValue("nominatim/lastSearch", self.lastSearch)
-        s.setValue("nominatim/gnOptions", self.gnOptions)
-        s.setValue("nominatim/gnUsername", self.gnUsername)
+        s.setValue("nominatim/gnOptions", tools.gnOptions)
         s.setValue("nominatim/defaultArea", self.defaultArea)
         s.setValue("nominatim/singleLayer", self.singleLayer)
 
@@ -103,14 +110,13 @@ class nominatim:
         self.localiseOnStartup = s.value(
             "nominatim/localiseOnStartup", (False), type=bool
         )
-        self.limitSearchToExtent = s.value(
+        tools.limitSearchToExtent = s.value(
             "nominatim/limitSearchToExtent", (False), type=bool
         )
         self.dlgPosX = s.value("nominatim/dlgPosX", 100, type=int)
         self.dlgPosY = s.value("nominatim/dlgPosY", 100, type=int)
         self.lastSearch = s.value("nominatim/lastSearch", "")
-        self.gnOptions = s.value("nominatim/gnOptions", "")
-        self.gnUsername = s.value("nominatim/gnUsername", "")
+        tools.gnOptions = s.value("nominatim/gnOptions", "")
         self.defaultArea = s.value(
             "nominatim/defaultArea", Qt.LeftDockWidgetArea, type=int
         )

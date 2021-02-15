@@ -29,91 +29,15 @@ from qgis.gui import QgsRubberBand
 from osgeo import ogr
 
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+from nominatim.logic import tools
 
 FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/dockwidget.ui")
 
 
 class nominatim_dlg(QDockWidget, FORM_CLASS):
-    def getHttp(self, uri, params):
-        QgsApplication.setOverrideCursor(Qt.WaitCursor)
-        try:
-            rq = QUrl(uri)
-            q = QUrlQuery()
-            for (k, v) in params.items():
-                q.addQueryItem(k, v)
-
-            rq.setQuery(q)
-            req = QNetworkRequest(rq)
-
-            try:
-                reply = self.nominatim_networkAccessManager.blockingGet(req)
-                resource = reply.content().data().decode("utf8")
-                r = json.loads(resource)
-
-                if isinstance(r, list):
-                    self.populateTable(r)
-                else:
-                    self.populateTable([r])
-            except Exception as e:
-                for m in e.args:
-                    QgsMessageLog.logMessage(m, "Extensions")
-
-                self.tableResult.clearContents()
-
-        finally:
-            QgsApplication.restoreOverrideCursor()
-
-    def searchJson(self, params, user, options, options2):
-        contents = str(options).strip()
-        items = contents.split(" ")
-
-        for (k, v) in options2.items():
-            if k in ["viewbox"]:
-                params["bounded"] = "1"
-            params[k] = v
-
-        pairs = []
-        for item in items:
-            pair = item.split("=", 1)
-            if pair != [""] and pair != [] and len(pair) > 1:
-                pairs.append(pair)
-
-        for (k, v) in pairs:
-            if (
-                k
-                in [
-                    "viewbox",
-                    "countrycodes",
-                    "limit",
-                    "exclude_place_ids",
-                    "addressdetails",
-                    "exclude_place_ids",
-                    "bounded",
-                    "routewidth",
-                    "osm_type",
-                    "osm_id",
-                ]
-                and not (k in options2.keys())
-            ):
-                params[k] = v
-
-            if k in ["viewbox"]:
-                params["bounded"] = "1"
-
-        params["polygon_text"] = "1"
-        params["format"] = "json"
-
-        uri = "https://nominatim.openstreetmap.org/search"
-
-        self.getHttp(uri, params)
-
-    def findNearbyJSON(self, params, user, options):
-        uri = "https://nominatim.openstreetmap.org/reverse"
-        params["format"] = "json"
-        self.getHttp(uri, params)
 
     """
-     Gestion de l'évènement "leave", afin d'effacer l'objet sélectionné en sortie du dock
+    Gestion de l'évènement "leave", afin d'effacer l'objet sélectionné en sortie du dock
     """
 
     def eventFilter(self, obj, event):
@@ -154,9 +78,9 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.PointLayerId = None
 
         try:
-            self.cbExtent.setChecked(self.plugin.limitSearchToExtent)
+            self.cbExtent.setChecked(tools.limitSearchToExtent)
         except:
-            self.cbExtent.setChecked(self.plugin.limitSearchToExtent)
+            self.cbExtent.setChecked(tools.limitSearchToExtent)
 
         self.currentExtent = self.plugin.canvas.extent()
 
@@ -176,8 +100,6 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             for m in e.args:
                 QgsMessageLog.logMessage(m, "Extensions")
             pass
-
-        self.nominatim_networkAccessManager = QgsNetworkAccessManager.instance()
 
     def cellEntered(self, row, col):
         item = self.tableResult.item(row, 0)
@@ -313,40 +235,32 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 "lat": str(bbox.center().y()),
                 "zoom": "10",
             }
-            self.findNearbyJSON(params, self.plugin.gnUsername, self.plugin.gnOptions)
+            tools.osmFindNearbyJSON(params, tools.gnOptions)
 
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(m, "Extensions")
             pass
+
+    def search(self, txt):
+        try:
+            self.plugin.lastSearch = self.editSearch.text()
+            tools.limitSearchToExtent = self.cbExtent.isChecked()
+            return tools.osmSearch(self.plugin.iface.mapCanvas(), txt)
+
+        except Exception as e:
+            for m in e.args:
+                QgsMessageLog.logMessage(m, "Extensions")
+
+        return None
 
     def onReturnPressed(self):
-        try:
-            txt = self.editSearch.text().strip()
-            self.plugin.lastSearch = self.editSearch.text()
-            self.plugin.limitSearchToExtent = self.cbExtent.isChecked()
-            options = self.plugin.gnOptions
-
-            options2 = {}
-            if self.plugin.limitSearchToExtent:
-                sourceCrs = self.plugin.canvas.mapSettings().destinationCrs()
-                targetCrs = QgsCoordinateReferenceSystem("EPSG:4326")
-                xform = QgsCoordinateTransform(
-                    sourceCrs, targetCrs, QgsProject.instance()
-                )
-                geom = xform.transform(self.plugin.canvas.extent())
-                vb = "{},{},{},{}".format(
-                    geom.xMinimum(), geom.yMaximum(), geom.xMaximum(), geom.yMinimum()
-                )
-                options2 = {"viewbox": vb}
-
-            params = {"q": txt, "addressdetails": "0"}
-            self.searchJson(params, self.plugin.gnUsername, options, options2)
-
-        except Exception as e:
-            for m in e.args:
-                QgsMessageLog.logMessage(m, "Extensions")
-            pass
+        txt = self.editSearch.text().strip()
+        r = self.search(txt)
+        if r != None:
+            self.populateTable(r)
+        else:
+            self.tableResult.clearContents()
 
     def onChoose(self, row, col):
         item = self.tableResult.item(row, 0)

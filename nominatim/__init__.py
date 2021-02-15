@@ -25,6 +25,6 @@ data © OpenStreetMap contributors - <a href="www.openstreetmap.org/copyright">c
 
 def classFactory(iface):
     # load aeag_search class from file aeag_search
-    from .nominatim import nominatim
+    from .nominatim import Nominatim
 
-    return nominatim(iface)
+    return Nominatim(iface)
