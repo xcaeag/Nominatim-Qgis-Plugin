@@ -235,8 +235,12 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 "lat": str(bbox.center().y()),
                 "zoom": "10",
             }
-            tools.osmFindNearbyJSON(params, tools.gnOptions)
-
+            r = tools.osmFindNearbyJSON(params, tools.gnOptions)
+            if r != None:
+                self.populateTable(r)
+            else:
+                self.tableResult.clearContents()
+                
         except Exception as e:
             for m in e.args:
                 QgsMessageLog.logMessage(m, "Extensions")

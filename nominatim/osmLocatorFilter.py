@@ -1,4 +1,5 @@
 """
+crash QGis. Nonfonctional.
 """
 
 from qgis.core import (

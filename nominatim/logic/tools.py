@@ -87,7 +87,7 @@ def osmSearchJson(params, options, options2):
 def osmFindNearbyJSON(params, options):
     uri = "https://nominatim.openstreetmap.org/reverse"
     params["format"] = "json"
-    getHttp(uri, params)
+    return getHttp(uri, params)
 
 def osmSearch(canvas, txt):
     global gnOptions
