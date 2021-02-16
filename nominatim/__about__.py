@@ -23,7 +23,7 @@ __all__ = [
 # -- GLOBALS --------------------------------------------------------------------
 
 DIR_PLUGIN_ROOT = Path(__file__).parent
-PLG_METADATA_FILE = DIR_PLUGIN_ROOT.resolve() / "metadata.txt"
+PLG_METADATA_FILE = DIR_PLUGIN_ROOT / "metadata.txt"
 
 
 #  -- FUNCTIONS --------------------------------------------------------------------
@@ -40,7 +40,7 @@ def plugin_metadata_as_dict() -> dict:
     """
     config = ConfigParser()
     if PLG_METADATA_FILE.is_file():
-        config.read(PLG_METADATA_FILE.resolve(), encoding="UTF-8")
+        config.read(PLG_METADATA_FILE, encoding="UTF-8")
         return {s: dict(config.items(s)) for s in config.sections()}
     else:
         raise IOError("Plugin metadata.txt not found at: %s" % PLG_METADATA_FILE)
