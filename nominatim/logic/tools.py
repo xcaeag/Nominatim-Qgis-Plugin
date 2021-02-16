@@ -26,7 +26,6 @@ def getHttp(uri, params):
 
         rq.setQuery(q)
         req = QNetworkRequest(rq)
-
         try:
             reply = nam.blockingGet(req)
             resource = reply.content().data().decode("utf8")
@@ -111,7 +110,7 @@ def osmSearch(canvas, txt):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             geom = xform.transform(canvas.extent())
             vb = "{},{},{},{}".format(
-                geom.xMinimum(), geom.yMaximum(), geom.xMaximum(), geom.yMinimum()
+                round(geom.xMinimum(), 4), round(geom.yMaximum(), 4), round(geom.xMaximum(), 4), round(geom.yMinimum(), 4)
             )
             options2 = {"viewbox": vb}
 
