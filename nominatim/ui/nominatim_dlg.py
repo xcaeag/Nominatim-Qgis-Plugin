@@ -78,9 +78,21 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.btnMask.clicked.connect(self.onMask)
         self.btnLayer.clicked.connect(self.onLayer)
 
-        self.singleLayerId = { QgsWkbTypes.PolygonGeometry : None, QgsWkbTypes.LineGeometry : None, QgsWkbTypes.PointGeometry : None }
-        self.singleLayerName = { QgsWkbTypes.PolygonGeometry : "OSM Place Search Polygons", QgsWkbTypes.LineGeometry : "OSM Place Search Lines", QgsWkbTypes.PointGeometry : "OSM Place Search Points" }
-        self.memoryLayerType = { QgsWkbTypes.PolygonGeometry :  "MultiPolygon", QgsWkbTypes.LineGeometry :  "MultiLineString", QgsWkbTypes.PointGeometry : "Point" }
+        self.singleLayerId = {
+            QgsWkbTypes.PolygonGeometry: None,
+            QgsWkbTypes.LineGeometry: None,
+            QgsWkbTypes.PointGeometry: None,
+        }
+        self.singleLayerName = {
+            QgsWkbTypes.PolygonGeometry: "OSM Place Search Polygons",
+            QgsWkbTypes.LineGeometry: "OSM Place Search Lines",
+            QgsWkbTypes.PointGeometry: "OSM Place Search Points",
+        }
+        self.memoryLayerType = {
+            QgsWkbTypes.PolygonGeometry: "MultiPolygon",
+            QgsWkbTypes.LineGeometry: "MultiLineString",
+            QgsWkbTypes.PointGeometry: "Point",
+        }
 
         try:
             self.cbExtent.setChecked(tools.limitSearchToExtent)
@@ -352,12 +364,12 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
     def addNewLayer(self, layerName, typ, fields):
         vl = QgsVectorLayer(self.memoryLayerType[typ], layerName, "memory")
-        if vl: 
+        if vl:
             vl.setProviderEncoding("UTF-8")
             pr = vl.dataProvider()
             pr.addAttributes(fields.toList())
             vl.setCrs(self.plugin.canvas.mapSettings().destinationCrs())
-            QgsProject.instance().addMapLayer(vl) 
+            QgsProject.instance().addMapLayer(vl)
             renderer = vl.renderer()
             s = renderer.symbol()
             s.setOpacity(0.85)

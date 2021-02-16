@@ -15,6 +15,7 @@ from qgis.core import (
 limitSearchToExtent = False
 gnOptions = ""
 
+
 def getHttp(uri, params):
     nam = QgsNetworkAccessManager.instance()
     QgsApplication.setOverrideCursor(Qt.WaitCursor)
@@ -110,7 +111,10 @@ def osmSearch(canvas, txt):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             geom = xform.transform(canvas.extent())
             vb = "{},{},{},{}".format(
-                round(geom.xMinimum(), 4), round(geom.yMaximum(), 4), round(geom.xMaximum(), 4), round(geom.yMinimum(), 4)
+                round(geom.xMinimum(), 4),
+                round(geom.yMaximum(), 4),
+                round(geom.xMaximum(), 4),
+                round(geom.yMinimum(), 4),
             )
             options2 = {"viewbox": vb}
 
