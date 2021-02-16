@@ -78,9 +78,9 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.btnMask.clicked.connect(self.onMask)
         self.btnLayer.clicked.connect(self.onLayer)
 
-        self.MultiPolygonLayerId = None
-        self.LineLayerId = None
-        self.PointLayerId = None
+        self.singleLayerId = { QgsWkbTypes.PolygonGeometry : None, QgsWkbTypes.LineGeometry : None, QgsWkbTypes.PointGeometry : None }
+        self.singleLayerName = { QgsWkbTypes.PolygonGeometry : "OSM Place Search Polygons", QgsWkbTypes.LineGeometry : "OSM Place Search Lines", QgsWkbTypes.PointGeometry : "OSM Place Search Points" }
+        self.memoryLayerType = { QgsWkbTypes.PolygonGeometry :  "MultiPolygon", QgsWkbTypes.LineGeometry :  "MultiLineString", QgsWkbTypes.PointGeometry : "Point" }
 
         try:
             self.cbExtent.setChecked(tools.limitSearchToExtent)
@@ -96,14 +96,6 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         try:
             self.editSearch.setText(self.plugin.lastSearch)
         except:
-            pass
-
-        try:
-            if self.plugin.localiseOnStartup:
-                self.doLocalize()
-        except Exception as e:
-            for m in e.args:
-                QgsMessageLog.logMessage(m, "Extensions")
             pass
 
     def cellEntered(self, row, col):
@@ -358,7 +350,24 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.plugin.canvas.refresh()
         self.showItem(item)
 
-    def doLayer(self, item):
+    def addNewLayer(self, layerName, typ, fields):
+        vl = QgsVectorLayer(self.memoryLayerType[typ], layerName, "memory")
+        if vl: 
+            vl.setProviderEncoding("UTF-8")
+            pr = vl.dataProvider()
+            pr.addAttributes(fields.toList())
+            vl.setCrs(self.plugin.canvas.mapSettings().destinationCrs())
+            QgsProject.instance().addMapLayer(vl) 
+            renderer = vl.renderer()
+            s = renderer.symbol()
+            s.setOpacity(0.85)
+
+        return vl
+
+    def doLayer(self, item, singleLayer=None):
+        if singleLayer is None:
+            singleLayer = self.plugin.singleLayer
+
         ogrFeature = item.data(Qt.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
@@ -374,75 +383,33 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
 
         vl = None
-        if not self.plugin.singleLayer:
-            if geom.type() == QgsWkbTypes.PolygonGeometry:
-                layerName = "OSMPlaceSearch Polygon"
-                layerId = self.MultiPolygonLayerId
-            if geom.type() == QgsWkbTypes.LineGeometry:
-                layerName = "OSMPlaceSearch Line"
-                layerId = self.LineLayerId
-            if geom.type() == QgsWkbTypes.PointGeometry:
-                layerName = "OSMPlaceSearch Point"
-                layerId = self.PointLayerId
-
+        if not singleLayer:
+            layerId = self.singleLayerId[geom.type()]
+            layerName = self.singleLayerName[geom.type()]
             vl = QgsProject.instance().mapLayer(layerId)
-            if vl is not None:
-                pr = vl.dataProvider()
-            else:
-                if geom.type() == QgsWkbTypes.PolygonGeometry:
-                    vl = QgsVectorLayer("MultiPolygon", layerName, "memory")
-                    self.MultiPolygonLayerId = vl.id()
-                if geom.type() == QgsWkbTypes.LineGeometry:
-                    vl = QgsVectorLayer("MultiLineString", layerName, "memory")
-                    self.LineLayerId = vl.id()
-                if geom.type() == QgsWkbTypes.PointGeometry:
-                    vl = QgsVectorLayer("Point", layerName, "memory")
-                    self.PointLayerId = vl.id()
-
-                if vl is not None:
-                    pr = vl.dataProvider()
-                    # ajout de champs
-                    pr.addAttributes(fields.toList())
-
-                QgsProject.instance().addMapLayer(vl)
+            if vl is None:
+                vl = self.addNewLayer(layerName, geom.type(), fields)
+                if vl:
+                    self.singleLayerId[geom.type()] = vl.id()
         else:
             layerName = "OSM " + ogrFeature.GetFieldAsString("id")
-
-            # creer une nouvelle couche si n'existe pas encore
-            if geom.type() == QgsWkbTypes.PolygonGeometry:
-                vl = QgsVectorLayer("MultiPolygon", layerName, "memory")
-            if geom.type() == QgsWkbTypes.LineGeometry:
-                vl = QgsVectorLayer("MultiLineString", layerName, "memory")
-            if geom.type() == QgsWkbTypes.PointGeometry:
-                vl = QgsVectorLayer("Point", layerName, "memory")
-
-            if vl is not None:
-                pr = vl.dataProvider()
-                # ajout de champs
-                pr.addAttributes(fields.toList())
-                vl.setCrs(self.plugin.canvas.mapSettings().destinationCrs())
-
-            QgsProject.instance().addMapLayer(vl)
+            vl = self.addNewLayer(layerName, geom.type(), fields)
 
         if vl is not None:
-            vl.setProviderEncoding("UTF-8")
+            pr = vl.dataProvider()
             vl.startEditing()
             pr.addFeatures([fet])
             vl.commitChanges()
 
-            renderer = vl.renderer()
-            s = renderer.symbol()
-            s.setOpacity(0.85)
-
             # mise a jour etendue de la couche
             vl.updateExtents()
-
+            """
             layerTree = QgsProject.instance().layerTreeRoot().findLayer(vl)
             if layerTree:
                 self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(
                     layerTree
                 )  # Refresh legend
-
+            """
             self.go(item, False)
 
             return vl
@@ -466,7 +433,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 self.go(item)
 
             except:
-                maskLayer = self.doLayer(item)
+                maskLayer = self.doLayer(item, True)
                 maskLayer.loadNamedStyle(
                     str(DIR_PLUGIN_ROOT / "resources" / "mask.qml")
                 )
