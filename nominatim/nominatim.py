@@ -168,6 +168,8 @@ class Nominatim:
     def dockVisibilityChanged(self, visible):
         try:
             self.defaultActive = visible
+            if visible and self.localiseOnStartup:
+                self.nominatim_dlg.doLocalize()
         except:
             pass
 
