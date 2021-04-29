@@ -1,20 +1,22 @@
-Nominatim-Qgis-Plugin
-=====================
+# Nominatim-Qgis-Plugin
 
-Goal
-----
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![Flake8](https://img.shields.io/badge/flake8-enabled-yellowgreen)](https://flake8.pycqa.org/)
+
+## Nominatim-Qgis-Plugin :gb:
+
+### Goal
 
 Facilitate location by looking for places (cities, hydrography ...), based on Nominatim (https://operations.osmfoundation.org/policies/nominatim/)
 
-Configuration
--------------
+### Configuration
 
 Specific API options for "Nominatim" service can be set as "option1=value option2=value"
 Thus, a limitation of the research in a given bounding box is configured by specifying (for example) the viewbox parameter : "viewbox=-1.85,46.35,3.90,42.50"
-The other options are described online : https://wiki.openstreetmap.org/wiki/Nominatim
+The other options are described online : https://nominatim.org/release-docs/develop/api/Search/
 
-Usage
------
+### Usage
 
 - Activate the panel,
 - Then enter the beginning of the name of the location. Confirm.
@@ -24,24 +26,32 @@ Usage
 
 You can also create a layer (or enrich the layers 'OSM polygon', 'line' or 'point' depending on the configuration) from the selected object, a mask layer (from mask plugin if exists) when element is a polygon
 
-Nominatim-Qgis-Plugin (Français)
-================================
+### The data
+
+The data returned by the nominatim service  (https://operations.osmfoundation.org/policies/nominatim/) are available under the ODbL license (Open Database License - https://opendatacommons.org/) and comes from https://www.openstreetmap.org (« © OpenStreetMap contributors ».)
+
+### Other plugins
+
+For integration into "locators", use the "Nominatim locator filter" ! (https://plugins.qgis.org/plugins/nominatim_locator_filter/)
+
+To download OSM data : QuickOSM (https://plugins.qgis.org/plugins/QuickOSM/)
+
+## Nominatim-Qgis-Plugin (Français) :fr:
 
 Aide à la localisation
-	
-Objectif
---------
+
+### Objectif
 
 Faciliter la localisation par la recherche de lieux (villes, hydrographie...), basé sur l'outil Nominatim (https://operations.osmfoundation.org/policies/nominatim/)
 
-Configuration
--------------
+### Configuration
+
 Les options propres à l'API REST "nominatim" peuvent être paramétrées sous la forme "option1=valeur option2=valeur"
 Ainsi, une limitation de la recherche à une étendue rectangulaire donnée se configure de la façon suivante : "viewbox=-1.85,46.35,3.90,42.50"
-Les autres options sont décrites en ligne : https://wiki.openstreetmap.org/wiki/Nominatim
+Les autres options sont décrites en ligne : https://nominatim.org/release-docs/develop/api/Search/
 
-Usage
------
+### Usage
+
 - Activez l'onglet,
 - Puis saisissez le début du nom du lieu recherché, validez.
 - La recherche peut se limiter à l'emprise géographique courante.
@@ -50,4 +60,12 @@ Usage
 
 Vous pouvez également créer une couche (ou enrichir les couches 'OSM polygon', 'line' ou 'point', selon la configuration) à partir de l'objet sélectionné, un masque (issue du plugin mask si il est actif) lorsqu'il s'agit d'un polygone.
 
+### Les données
 
+Les données retournées par le service nominatim (https://operations.osmfoundation.org/policies/nominatim/) sont disponibles sous la licence ODbL (Open Database License - https://opendatacommons.org/) et proviennent de https://www.openstreetmap.org (« © les contributeurs d’OpenStreetMap ».)
+
+### D'autres plugins
+
+Pour une intégration dans les "localisateurs", utilisez le "Nominatim locator filter" ! (https://plugins.qgis.org/plugins/nominatim_locator_filter/)
+
+Pour télécharger des données OSM : QuickOSM (https://plugins.qgis.org/plugins/QuickOSM/)

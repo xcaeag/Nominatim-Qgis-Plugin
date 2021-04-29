@@ -1,2 +1,4 @@
 nominatim/log.txt
 .vscode/settings.json
+*.log
+*.sh

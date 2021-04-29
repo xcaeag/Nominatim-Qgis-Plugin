@@ -1,10 +1,10 @@
 ﻿"""
 /***************************************************************************
 Name	        :  plugin
-Description          : Aide à la localisation 
-Date                 : March/13 
+Description          : Aide à la localisation
+Date                 : March/13
 copyright            : (C) 2011 by AEAG
-email                : xavier.culos@eau-adour-garonne.fr 
+email                : xavier.culos@eau-adour-garonne.fr
  ***************************************************************************/
 
 /***************************************************************************
@@ -16,13 +16,15 @@ email                : xavier.culos@eau-adour-garonne.fr
  *                                                                         *
  ***************************************************************************/
  This script initializes the plugin, making it known to QGIS.
- 
+
 <p>Nominatim Search Courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png"></p>
 data © OpenStreetMap contributors - <a href="www.openstreetmap.org/copyright">copyright</a>"
- 
-"""
-def classFactory(iface): 
-  # load aeag_search class from file aeag_search
-  from .nominatim import nominatim 
-  return nominatim(iface)
 
+"""
+
+
+def classFactory(iface):
+    # load aeag_search class from file aeag_search
+    from .nominatim import Nominatim
+
+    return Nominatim(iface)

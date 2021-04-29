@@ -43,7 +43,7 @@
         <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>&lt;p&gt;Nominatim Search from &lt;a href=&quot;http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy&quot; target=&quot;_blank&quot;&gt;OSM&lt;/a&gt; &lt;img src=&quot;http://www.openstreetmap.org/assets/osm_logo.png&quot;&gt;, data © OpenStreetMap contributors - &lt;a href=&quot;www.openstreetmap.org/copyright&quot;&gt;copyright&lt;/a&gt;&lt;/p&gt;</string>
+        <string notr="true">&lt;p&gt;Nominatim Search from &lt;a href=&quot;https://operations.osmfoundation.org/policies/nominatim/&quot; target=&quot;_blank&quot;&gt;OSM&lt;/a&gt; &lt;img src=&quot;http://www.openstreetmap.org/assets/osm_logo.png&quot;&gt;, data © OpenStreetMap contributors - &lt;a href=&quot;http://www.openstreetmap.org/copyright&quot;&gt;copyright&lt;/a&gt;&lt;/p&gt;</string>
        </property>
        <property name="openExternalLinks">
         <bool>true</bool>
@@ -93,7 +93,7 @@
           <string>Click here to pick exemple</string>
          </property>
          <property name="text">
-          <string>viewbox=-1.85,46.35,3.90,42.50</string>
+          <string notr="true">viewbox=-1.85,46.35,3.90,42.50</string>
          </property>
          <property name="autoDefault">
           <bool>true</bool>
@@ -109,7 +109,7 @@
           <string>Click here to pick exemple</string>
          </property>
          <property name="text">
-          <string>countrycodes=FR</string>
+          <string notr="true">countrycodes=FR</string>
          </property>
          <property name="autoDefault">
           <bool>true</bool>
@@ -125,7 +125,7 @@
           <string>Click here to pick exemple</string>
          </property>
          <property name="text">
-          <string>limit=20</string>
+          <string notr="true">limit=20</string>
          </property>
          <property name="autoDefault">
           <bool>true</bool>
