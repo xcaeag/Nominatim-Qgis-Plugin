@@ -1,6 +1,6 @@
 import json
 
-from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery
+from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery, QSettings
 from qgis.PyQt.QtNetwork import QNetworkRequest
 
 from qgis.core import (
@@ -87,6 +87,12 @@ def osmSearchJson(params, options, options2):
     params["polygon_text"] = "1"
     params["format"] = "json"
 
+    try:
+        locale = QSettings().value("locale/userLocale")
+        params["accept-language"] = locale[0:2]
+    except:
+        pass
+
     uri = "https://nominatim.openstreetmap.org/search"
 
     return getHttp(uri, params)
@@ -95,6 +101,13 @@ def osmSearchJson(params, options, options2):
 def osmFindNearbyJSON(params, options):
     uri = "https://nominatim.openstreetmap.org/reverse"
     params["format"] = "json"
+
+    try:
+        locale = QSettings().value("locale/userLocale")
+        params["accept-language"] = locale[0:2]
+    except:
+        pass
+
     return getHttp(uri, params)
 
 
