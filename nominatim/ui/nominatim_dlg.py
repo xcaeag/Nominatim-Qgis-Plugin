@@ -165,79 +165,33 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         else:
             extratags = ""
 
-        if osm_type == "node":
+        if "boundingbox" in item.keys():
+            # we have a polygonal item
+            bbox = item["boundingbox"]
+
+            poFD = ogr.FeatureDefn("Rectangle")
+            poFD.SetGeomType(ogr.wkbPolygon)
+            nominatim_dlg.add_fields(poFD)
+
+            ogrFeature = ogr.Feature(poFD)
+            if wkt is None:
+                wkt = "POLYGON(({b[2]} {b[0]}, {b[2]} {b[1]}, {b[3]} {b[1]}, {b[3]} {b[0]}, {b[2]} {b[0]}))".format(
+                    b=bbox
+                )
+
+            ogrGeom = ogr.CreateGeometryFromWkt(wkt)
+        else:
+            # we have something to represent as a point
             lat = item["lat"]
             lng = item["lon"]
 
             poFD = ogr.FeatureDefn("Point")
             poFD.SetGeomType(ogr.wkbPoint)
-
-            oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
-            poFD.AddFieldDefn(oFLD)
-            oFLD = ogr.FieldDefn("class", ogr.OFTString)
-            poFD.AddFieldDefn(oFLD)
-            oFLD = ogr.FieldDefn("type", ogr.OFTString)
-            poFD.AddFieldDefn(oFLD)
-            oFLD = ogr.FieldDefn("name", ogr.OFTString)
-            poFD.AddFieldDefn(oFLD)
-            oFLD = ogr.FieldDefn("address", ogr.OFTString)
-            poFD.AddFieldDefn(oFLD)
-            oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
-            poFD.AddFieldDefn(oFLD)
+            nominatim_dlg.add_fields(poFD)
 
             ogrFeature = ogr.Feature(poFD)
             wkt = "POINT({} {})".format(lng, lat)
             ogrGeom = ogr.CreateGeometryFromWkt(wkt)
-        else:
-            try:
-                bbox = item["boundingbox"]
-
-                poFD = ogr.FeatureDefn("Rectangle")
-                poFD.SetGeomType(ogr.wkbPolygon)
-
-                oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("class", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("type", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("name", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("address", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-
-                ogrFeature = ogr.Feature(poFD)
-                if wkt is None:
-                    wkt = "POLYGON(({b[2]} {b[0]}, {b[2]} {b[1]}, {b[3]} {b[1]}, {b[3]} {b[0]}, {b[2]} {b[0]}))".format(
-                        b=bbox
-                    )
-
-                ogrGeom = ogr.CreateGeometryFromWkt(wkt)
-            except:
-                lat = item["lat"]
-                lng = item["lon"]
-
-                poFD = ogr.FeatureDefn("Point")
-                poFD.SetGeomType(ogr.wkbPoint)
-
-                oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("class", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("type", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("name", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("address", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-                oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
-                poFD.AddFieldDefn(oFLD)
-
-                ogrFeature = ogr.Feature(poFD)
-                wkt = "POINT({} {})".format(lng, lat)
-                ogrGeom = ogr.CreateGeometryFromWkt(wkt)
 
         ogrFeature.SetGeometry(ogrGeom)
         ogrFeature.SetFID(int(idx + 1))
@@ -472,6 +426,26 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             self.go(item, False)
 
             return vl
+
+    @staticmethod
+    def add_fields(feature_definition):
+        """Adds a predefined set of fields to an OGR feature definition.
+
+        Args:
+            feature_definition: Feature definition to add the fields to.
+        """
+        oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
+        feature_definition.AddFieldDefn(oFLD)
+        oFLD = ogr.FieldDefn("class", ogr.OFTString)
+        feature_definition.AddFieldDefn(oFLD)
+        oFLD = ogr.FieldDefn("type", ogr.OFTString)
+        feature_definition.AddFieldDefn(oFLD)
+        oFLD = ogr.FieldDefn("name", ogr.OFTString)
+        feature_definition.AddFieldDefn(oFLD)
+        oFLD = ogr.FieldDefn("address", ogr.OFTString)
+        feature_definition.AddFieldDefn(oFLD)
+        oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
+        feature_definition.AddFieldDefn(oFLD)
 
     def doMask(self, item):
         mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
