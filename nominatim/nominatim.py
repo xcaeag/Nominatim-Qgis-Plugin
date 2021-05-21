@@ -22,7 +22,7 @@ import os
 from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
 from qgis.PyQt.QtWidgets import QAction, QApplication
 from qgis.utils import showPluginHelp
-from .ui.nominatim_dlg import nominatim_dlg
+from .ui.nominatimdialog import NominatimDialog
 from .ui.nominatim_conf_dlg import nominatim_conf_dlg
 
 # from .osmLocatorFilter import OsmLocatorFilter
@@ -72,7 +72,7 @@ class Nominatim:
         try:
             self.nominatim_dlg
         except:
-            self.nominatim_dlg = nominatim_dlg(self.iface.mainWindow(), self)
+            self.nominatim_dlg = NominatimDialog(self.iface.mainWindow(), self)
             self.nominatim_dlg.visibilityChanged.connect(self.dockVisibilityChanged)
             self.nominatim_dlg.dockLocationChanged.connect(self.dockLocationChanged)
 

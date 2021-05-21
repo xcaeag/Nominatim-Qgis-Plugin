@@ -39,7 +39,7 @@ from nominatim.logic import tools
 FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/dockwidget.ui")
 
 
-class nominatim_dlg(QDockWidget, FORM_CLASS):
+class NominatimDialog(QDockWidget, FORM_CLASS):
 
     """
     Gestion de l'évènement "leave", afin d'effacer l'objet sélectionné en sortie du dock
@@ -171,7 +171,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
             poFD = ogr.FeatureDefn("Rectangle")
             poFD.SetGeomType(ogr.wkbPolygon)
-            nominatim_dlg.add_fields(poFD)
+            NominatimDialog.add_fields(poFD)
 
             ogrFeature = ogr.Feature(poFD)
             if wkt is None:
@@ -187,7 +187,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
             poFD = ogr.FeatureDefn("Point")
             poFD.SetGeomType(ogr.wkbPoint)
-            nominatim_dlg.add_fields(poFD)
+            NominatimDialog.add_fields(poFD)
 
             ogrFeature = ogr.Feature(poFD)
             wkt = "POINT({} {})".format(lng, lat)
