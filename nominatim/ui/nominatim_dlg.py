@@ -130,7 +130,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             self.doMask(item)
 
     def populateRow(self, item, idx):
-        id = item["place_id"]
+        osm_id = item.get("osm_id")
         name = item["display_name"]
 
         try:
@@ -160,7 +160,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
             poFD = ogr.FeatureDefn("Point")
             poFD.SetGeomType(ogr.wkbPoint)
 
-            oFLD = ogr.FieldDefn("id", ogr.OFTString)
+            oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
             poFD.AddFieldDefn(oFLD)
             oFLD = ogr.FieldDefn("name", ogr.OFTString)
             poFD.AddFieldDefn(oFLD)
@@ -175,7 +175,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 poFD = ogr.FeatureDefn("Rectangle")
                 poFD.SetGeomType(ogr.wkbPolygon)
 
-                oFLD = ogr.FieldDefn("id", ogr.OFTString)
+                oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
                 poFD.AddFieldDefn(oFLD)
                 oFLD = ogr.FieldDefn("name", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
@@ -194,7 +194,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 poFD = ogr.FeatureDefn("Point")
                 poFD.SetGeomType(ogr.wkbPoint)
 
-                oFLD = ogr.FieldDefn("id", ogr.OFTString)
+                oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
                 poFD.AddFieldDefn(oFLD)
                 oFLD = ogr.FieldDefn("name", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
@@ -205,8 +205,8 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
         ogrFeature.SetGeometry(ogrGeom)
         ogrFeature.SetFID(int(idx + 1))
-        ogrFeature.SetField(str("id"), str(id))
         ogrFeature.SetField(str("name"), name)
+        ogrFeature.SetField("osm_id", osm_id)
 
         item = QTableWidgetItem(name)
         item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
@@ -384,13 +384,13 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         self.transform(geom)
 
         fields = QgsFields()
-        fields.append(QgsField("id", QVariant.String))
+        fields.append(QgsField("osm_id", QVariant.LongLong))
         fields.append(QgsField("name", QVariant.String))
         fet = QgsFeature()
         fet.initAttributes(2)
         fet.setFields(fields)
         fet.setGeometry(geom)
-        fet.setAttribute("id", (ogrFeature.GetFieldAsString("id")))
+        fet.setAttribute("osm_id", (ogrFeature.GetFieldAsInteger64("osm_id")))
         fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
 
         vl = None
@@ -403,7 +403,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
                 if vl:
                     self.singleLayerId[geom.type()] = vl.id()
         else:
-            layerName = "OSM " + ogrFeature.GetFieldAsString("id")
+            layerName = "OSM " + ogrFeature.GetFieldAsString("osm_id")
             vl = self.addNewLayer(layerName, geom.type(), fields)
 
         if vl is not None:
@@ -429,7 +429,7 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
 
         ogrFeature = item.data(Qt.UserRole)
-        layerName = "OSM " + ogrFeature.GetFieldAsString("id")
+        layerName = "OSM " + ogrFeature.GetFieldAsString("osm_id")
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
