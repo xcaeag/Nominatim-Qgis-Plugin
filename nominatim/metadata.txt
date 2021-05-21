@@ -4,9 +4,10 @@ qgisMinimumVersion=3.6
 qgisMaximumVersion=3.98
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (https://operations.osmfoundation.org/policies/nominatim/)
-version=1.3.1
+version=1.4.0
 
 changelog=
+    1.4.0 : Use OSM-ID instead of Nominatim's internal place_id as ID. issues #13. Thanks to https://github.com/kannes
     1.3.1 : default language provided to OSM queries. Chinese translation. Thanks to https://github.com/wsk170
     1.3.0 : code reorganization, deprecation warning deleted, improved mask style
     1.2.8 : pull #12 - Russian translation, thanks to Petr Tsymbarovich (https://github.com/mentaljam)
