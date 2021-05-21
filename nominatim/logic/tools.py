@@ -85,6 +85,8 @@ def osmSearchJson(params, options, options2):
 
     params["polygon_text"] = "1"
     params["format"] = "json"
+    params["extratags"] = "1"
+    params["addressdetails"] = "1"
 
     try:
         locale = QSettings().value("locale/userLocale")
@@ -137,3 +139,23 @@ def osmSearch(canvas, txt):
         pass
 
     return None
+
+
+def dict_to_hstore_string(d):
+    """Returns an hstore string representation of the dictionary.
+
+    Note: The dictionary must be flat or the resulting hstore string
+          might be erroneous.
+
+    Args:
+        d (dict): A flat dictionary
+
+    Returns:
+        str: A hstore string representation of the dict
+    """
+
+    hstore_strings = []
+    for key, value in d.items():
+        hstore_string = f'"{key}"=>"{value}"'
+        hstore_strings.append(hstore_string)
+    return ",".join(hstore_strings)

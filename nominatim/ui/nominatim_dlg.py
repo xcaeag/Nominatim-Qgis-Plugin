@@ -146,6 +146,25 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         wkt = item.get("geotext")
         osm_type = item.get("osm_type")
 
+        # extratags and address_details are dictionaries with content that can
+        # vary per feature and also per nominatim server. We expose them as
+        # HStore strings as that is easy to handle in QGIS with the
+        # hstore_to_map expression function.
+        # When querying the official OSM nominatim server, the extratags
+        # contain all the tags not already included in the class, address, etc
+        # fields. Other nominatim servers can be configured differently.
+        address = item.get("address")
+        if address:
+            address = tools.dict_to_hstore_string(address)
+        else:
+            address = ""
+
+        extratags = item.get("extratags")
+        if extratags:
+            extratags = tools.dict_to_hstore_string(extratags)
+        else:
+            extratags = ""
+
         if osm_type == "node":
             lat = item["lat"]
             lng = item["lon"]
@@ -155,7 +174,15 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
             oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
             poFD.AddFieldDefn(oFLD)
+            oFLD = ogr.FieldDefn("class", ogr.OFTString)
+            poFD.AddFieldDefn(oFLD)
+            oFLD = ogr.FieldDefn("type", ogr.OFTString)
+            poFD.AddFieldDefn(oFLD)
             oFLD = ogr.FieldDefn("name", ogr.OFTString)
+            poFD.AddFieldDefn(oFLD)
+            oFLD = ogr.FieldDefn("address", ogr.OFTString)
+            poFD.AddFieldDefn(oFLD)
+            oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
             poFD.AddFieldDefn(oFLD)
 
             ogrFeature = ogr.Feature(poFD)
@@ -170,7 +197,15 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
                 oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
                 poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("class", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("type", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
                 oFLD = ogr.FieldDefn("name", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("address", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
 
                 ogrFeature = ogr.Feature(poFD)
@@ -189,7 +224,15 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
                 oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
                 poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("class", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("type", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
                 oFLD = ogr.FieldDefn("name", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("address", ogr.OFTString)
+                poFD.AddFieldDefn(oFLD)
+                oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
                 poFD.AddFieldDefn(oFLD)
 
                 ogrFeature = ogr.Feature(poFD)
@@ -198,8 +241,12 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
         ogrFeature.SetGeometry(ogrGeom)
         ogrFeature.SetFID(int(idx + 1))
-        ogrFeature.SetField(str("name"), name)
         ogrFeature.SetField("osm_id", osm_id)
+        ogrFeature.SetField("class", className)
+        ogrFeature.SetField("type", typeName)
+        ogrFeature.SetField("name", name)
+        ogrFeature.SetField("address", address)
+        ogrFeature.SetField("extratags", extratags)
 
         item = QTableWidgetItem(name)
         item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
@@ -378,13 +425,21 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
 
         fields = QgsFields()
         fields.append(QgsField("osm_id", QVariant.LongLong))
+        fields.append(QgsField("class", QVariant.String))
+        fields.append(QgsField("type", QVariant.String))
         fields.append(QgsField("name", QVariant.String))
+        fields.append(QgsField("address", QVariant.String))
+        fields.append(QgsField("extratags", QVariant.String))
         fet = QgsFeature()
         fet.initAttributes(2)
         fet.setFields(fields)
         fet.setGeometry(geom)
         fet.setAttribute("osm_id", (ogrFeature.GetFieldAsInteger64("osm_id")))
+        fet.setAttribute("class", (ogrFeature.GetFieldAsString("class")))
+        fet.setAttribute("type", (ogrFeature.GetFieldAsString("type")))
         fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
+        fet.setAttribute("address", (ogrFeature.GetFieldAsString("address")))
+        fet.setAttribute("extratags", (ogrFeature.GetFieldAsString("extratags")))
 
         vl = None
         if not singleLayer:
