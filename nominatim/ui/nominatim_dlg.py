@@ -143,15 +143,8 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         except:
             typeName = ""
 
-        try:
-            wkt = item["geotext"]
-        except:
-            wkt = None
-
-        try:
-            osm_type = item["osm_type"]
-        except:
-            osm_type = None
+        wkt = item.get("geotext")
+        osm_type = item.get("osm_type")
 
         if osm_type == "node":
             lat = item["lat"]
