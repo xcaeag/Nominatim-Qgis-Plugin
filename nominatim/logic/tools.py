@@ -71,7 +71,6 @@ def osmSearchJson(params, options, options2):
                 "limit",
                 "exclude_place_ids",
                 "addressdetails",
-                "exclude_place_ids",
                 "bounded",
                 "routewidth",
                 "osm_type",

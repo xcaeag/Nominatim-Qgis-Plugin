@@ -153,7 +153,6 @@ class nominatim_dlg(QDockWidget, FORM_CLASS):
         except:
             osm_type = None
 
-        bbox = {}
         if osm_type == "node":
             lat = item["lat"]
             lng = item["lon"]
