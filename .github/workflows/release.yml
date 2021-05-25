@@ -59,7 +59,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         draft: false
-       prerelease: false
+        prerelease: false
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
         body_path: release.md
