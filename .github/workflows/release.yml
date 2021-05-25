@@ -49,8 +49,8 @@ jobs:
     #    path: ${{ env.PROJECT_FOLDER }}.${{steps.get-myversion.outputs.myversion}}.zip
     #    if-no-files-found: error
 
-    - name : Get current changelog for ${VERSION}
-      run: qgis-plugin-ci changelog ${GITHUB_REF/refs\/tags\//} >> release.md
+    - name : Get current changelog for ${{ github.ref }}
+      run: qgis-plugin-ci changelog ${{steps.get-myversion.outputs.myversion}} >> release.md
 
     - name: Create Release
       id: create_release
@@ -71,7 +71,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.PROJECT_FOLDER }}.${{steps.get-myversion.outputs.myversion}}.zip
-        asset_name: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}
+        asset_name: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}.zip
         asset_content_type: application/zip
 
     # - name: Deploy plugin
