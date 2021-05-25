@@ -46,7 +46,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}
-        path: ${{ env.PROJECT_FOLDER }}-${{steps.get-myversion.outputs.myversion}}.zip
+        path: ${{ env.PROJECT_FOLDER }}.${{steps.get-myversion.outputs.myversion}}.zip
         if-no-files-found: error
 
     - name : Get current changelog for ${VERSION}
