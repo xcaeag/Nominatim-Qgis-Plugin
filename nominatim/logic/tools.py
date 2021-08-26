@@ -99,18 +99,23 @@ def osmSearchJson(params, options, options2):
     return getHttp(uri, params)
 
 
-def osmFindNearbyJSON(params, options):
+def osmFindNearbyJSON(params):
     uri = "https://nominatim.openstreetmap.org/reverse"
     params["format"] = "json"
 
-    try:
-        locale = QSettings().value("locale/userLocale")
-        params["accept-language"] = locale[0:2]
-    except:
-        pass
+    results = []
+    locale = QSettings().value("locale/userLocale")
+    params["accept-language"] = locale[0:2]
+    params["polygon_text"] = "1"
+    for zoom in ("11", "9"):
+        try:
+            params["zoom"] = zoom
+            result = getHttp(uri, params)
+            results = results + result
+        except:
+            pass
 
-    return getHttp(uri, params)
-
+    return results
 
 def osmSearch(canvas, txt):
     global gnOptions

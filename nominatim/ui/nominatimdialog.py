@@ -234,10 +234,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
             params = {
                 "lon": str(bbox.center().x()),
-                "lat": str(bbox.center().y()),
-                "zoom": "10",
+                "lat": str(bbox.center().y())
             }
-            r = tools.osmFindNearbyJSON(params, tools.gnOptions)
+            r = tools.osmFindNearbyJSON(params)
             if r != None:
                 self.populateTable(r)
             else:
