@@ -10,7 +10,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtNetwork import QNetworkRequest
-from qgis.utils import showPluginHelp
+# from qgis.utils import showPluginHelp
 
 from qgis.core import (
     QgsProject,
@@ -72,7 +72,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.editSearch.returnPressed.connect(self.onReturnPressed)
         self.btnSearch.clicked.connect(self.onReturnPressed)
         self.btnApply.clicked.connect(self.onApply)
-        self.btnHelp.clicked.connect(lambda: showPluginHelp(filename="../doc/index"))
+        self.btnHelp.clicked.connect(lambda: tools.showPluginHelp(filename="../doc/index"))
 
         self.btnLocalize.clicked.connect(self.doLocalize)
         self.btnMask.clicked.connect(self.onMask)

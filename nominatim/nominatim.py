@@ -21,7 +21,7 @@ import os
 
 from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
 from qgis.PyQt.QtWidgets import QAction, QApplication
-from qgis.utils import showPluginHelp
+#from qgis.utils import showPluginHelp
 from .ui.nominatimdialog import NominatimDialog
 from .ui.nominatim_conf_dlg import nominatim_conf_dlg
 
@@ -147,7 +147,7 @@ class Nominatim:
         # Add actions to the toolbar
         self.act_config.triggered.connect(self.do_config)
         self.act_nominatim_help.triggered.connect(
-            lambda: showPluginHelp(filename="doc/index")
+            lambda: tools.showPluginHelp(filename="doc/index")
         )
 
         self.iface.addDockWidget(self.defaultArea, self.nominatim_dlg)
