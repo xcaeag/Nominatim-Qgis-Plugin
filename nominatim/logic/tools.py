@@ -196,7 +196,8 @@ def showPluginHelp(packageName: str = None, filename: str = "index", section: st
     if not os.path.exists(helpfile):
         helpfile = os.path.join(path, filename + ".html")
     if os.path.exists(helpfile):
-        url = "file:///" + QDir.fromNativeSeparators(helpfile)
+        url = QDir.fromNativeSeparators(helpfile)
         if section != "":
             url = url + "#" + section
-        QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
+        if not QDesktopServices.openUrl(QUrl("file:///"+url, QUrl.TolerantMode)):
+            QDesktopServices.openUrl(QUrl("file://"+url, QUrl.TolerantMode))
