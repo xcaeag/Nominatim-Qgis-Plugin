@@ -4,9 +4,10 @@ qgisMinimumVersion=3.6
 qgisMaximumVersion=3.98
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (https://operations.osmfoundation.org/policies/nominatim/)
-version=1.4.3
+version=1.4.4
 
 changelog=
+    1.4.4 : fix panel management pb
     1.4.3 : fix help loading on Windows. Thanks to https://github.com/AlisterH
     1.4.2 : fix Help is not showing  
     1.4.1 : The reverse search returns geometry

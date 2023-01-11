@@ -1,7 +1,5 @@
-﻿import json
-
-from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery
+﻿from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt, QVariant, pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
     QHeaderView,
@@ -9,8 +7,6 @@ from qgis.PyQt.QtWidgets import (
     QTableWidgetItem,
 )
 from qgis.PyQt.QtGui import QIcon, QColor
-from qgis.PyQt.QtNetwork import QNetworkRequest
-# from qgis.utils import showPluginHelp
 
 from qgis.core import (
     QgsProject,
@@ -24,10 +20,8 @@ from qgis.core import (
     QgsField,
     QgsFields,
     QgsFeature,
-    QgsLineSymbol,
     QgsWkbTypes,
     QgsUnitTypes,
-    QgsNetworkAccessManager,
 )
 
 from qgis.gui import QgsRubberBand
@@ -40,6 +34,8 @@ FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/dockwidget.ui")
 
 
 class NominatimDialog(QDockWidget, FORM_CLASS):
+
+    closingPlugin = pyqtSignal()
 
     """
     Gestion de l'évènement "leave", afin d'effacer l'objet sélectionné en sortie du dock
@@ -144,7 +140,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             typeName = ""
 
         wkt = item.get("geotext")
-        osm_type = item.get("osm_type")
+        #osm_type = item.get("osm_type")
 
         # extratags and address_details are dictionaries with content that can
         # vary per feature and also per nominatim server. We expose them as
@@ -415,13 +411,6 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
             # mise a jour etendue de la couche
             vl.updateExtents()
-            """
-            layerTree = QgsProject.instance().layerTreeRoot().findLayer(vl)
-            if layerTree:
-                self.plugin.iface.layerTreeView().layerTreeModel().refreshLayerLegend(
-                    layerTree
-                )  # Refresh legend
-            """
             self.go(item, False)
 
             return vl
@@ -470,3 +459,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
                     str(DIR_PLUGIN_ROOT / "resources" / "mask.qml")
                 )
                 maskLayer.triggerRepaint()
+
+    def closeEvent(self, event):
+        self.closingPlugin.emit()
+        event.accept()

@@ -20,30 +20,28 @@ email                : xavier.culos@eau-adour-garonne.fr
 import os
 
 from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
-from qgis.PyQt.QtWidgets import QAction, QApplication
-#from qgis.utils import showPluginHelp
+from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QIcon
 from .ui.nominatimdialog import NominatimDialog
 from .ui.nominatim_conf_dlg import nominatim_conf_dlg
-
-# from .osmLocatorFilter import OsmLocatorFilter
-
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 from nominatim.logic import tools
+# from .osmLocatorFilter import OsmLocatorFilter
 
+from qgis.core import QgsMessageLog
 
 class Nominatim:
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
         self.path = QFileInfo(os.path.realpath(__file__)).path()
-        self.toolBar = None
+        self.toolbar = self.iface.pluginToolBar()
         self.canvas = self.iface.mapCanvas()
-        self.dlgPosX = 100
-        self.dlgPosY = 100
         self.lastSearch = ""
         self.localiseOnStartup = True
-        self.defaultArea = Qt.LeftDockWidgetArea
         self.singleLayer = True
+        self.mainAction = None
+        self.defaultArea = Qt.LeftDockWidgetArea
 
         self.read()
 
@@ -69,17 +67,10 @@ class Nominatim:
             # no translation
             pass
 
-        try:
-            self.nominatim_dlg
-        except:
-            self.nominatim_dlg = NominatimDialog(self.iface.mainWindow(), self)
-            self.nominatim_dlg.visibilityChanged.connect(self.dockVisibilityChanged)
-            self.nominatim_dlg.dockLocationChanged.connect(self.dockLocationChanged)
+        self.actions = []
 
-        try:
-            self.nominatim_dlg.editSearch.setText(self.lastSearch)
-        except:
-            pass
+        self.pluginIsActive = False
+        self.dockwidget = None
 
         # self.filter = OsmLocatorFilter(self.iface, self)
         # self.filter.resultProblem.connect(self.showLocatorProblem)
@@ -98,12 +89,10 @@ class Nominatim:
         s = QSettings()
         s.setValue("nominatim/localiseOnStartup", self.localiseOnStartup)
         s.setValue("nominatim/limitSearchToExtent", tools.limitSearchToExtent)
-        s.setValue("nominatim/dlgPosX", self.dlgPosX)
-        s.setValue("nominatim/dlgPosY", self.dlgPosY)
         s.setValue("nominatim/lastSearch", self.lastSearch)
         s.setValue("nominatim/gnOptions", tools.gnOptions)
-        s.setValue("nominatim/defaultArea", self.defaultArea)
         s.setValue("nominatim/singleLayer", self.singleLayer)
+        s.setValue("nominatim/defaultArea", self.defaultArea)
 
     def read(self):
         s = QSettings()
@@ -114,79 +103,158 @@ class Nominatim:
         tools.limitSearchToExtent = s.value(
             "nominatim/limitSearchToExtent", (False), type=bool
         )
-        self.dlgPosX = s.value("nominatim/dlgPosX", 100, type=int)
-        self.dlgPosY = s.value("nominatim/dlgPosY", 100, type=int)
         self.lastSearch = s.value("nominatim/lastSearch", "")
         tools.gnOptions = s.value("nominatim/gnOptions", "")
+        self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
         self.defaultArea = s.value(
             "nominatim/defaultArea", Qt.LeftDockWidgetArea, type=int
         )
-        self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
+
+    def add_action(
+        self,
+        text, menu,
+        callback,
+        icon_path=None,
+        enabled_flag=True,
+        add_to_menu=True,
+        add_to_toolbar=True,
+        status_tip=None,
+        whats_this=None,
+        parent=None):
+        """Add a toolbar icon to the toolbar.
+
+        :param text: Text that should be shown in menu items for this action.
+        :type text: str
+
+        :param menu: Menu entry that should be shown in menu items for this action.
+        :type text: str
+
+        :param icon_path: Path to the icon for this action. Can be a resource
+            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
+        :type icon_path: str
+
+        :param callback: Function to be called when the action is triggered.
+        :type callback: function
+
+        :param enabled_flag: A flag indicating if the action should be enabled
+            by default. Defaults to True.
+        :type enabled_flag: bool
+
+        :param add_to_menu: Flag indicating whether the action should also
+            be added to the menu. Defaults to True.
+        :type add_to_menu: bool
+
+        :param add_to_toolbar: Flag indicating whether the action should also
+            be added to the toolbar. Defaults to True.
+        :type add_to_toolbar: bool
+
+        :param status_tip: Optional text to show in a popup when mouse pointer
+            hovers over the action.
+        :type status_tip: str
+
+        :param parent: Parent widget for the new action. Defaults None.
+        :type parent: QWidget
+
+        :param whats_this: Optional text to show in the status bar when the
+            mouse pointer hovers over the action.
+
+        :returns: The action that was created. Note that the action is also
+            added to self.actions list.
+        :rtype: QAction
+        """
+
+        if icon_path is None:
+            action = QAction(text, parent)
+        else:
+            action = QAction(QIcon(icon_path), text, parent)
+
+        action.triggered.connect(callback)
+        action.setEnabled(enabled_flag)
+
+        if status_tip is not None:
+            action.setStatusTip(status_tip)
+
+        if whats_this is not None:
+            action.setWhatsThis(whats_this)
+
+        if add_to_toolbar:
+            self.toolbar.addAction(action)
+
+        if add_to_menu:
+            self.iface.addPluginToMenu(menu, action)
+
+        self.actions.append(action)
+
+        return action
 
     def initGui(self):
-        self.toolBar = self.iface.pluginToolBar()
+        """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        self.act_config = QAction(
+        icon_path = "{}/resources/nominatim.png".format(DIR_PLUGIN_ROOT)
+        self.mainAction = self.add_action(
+            self.tr(__title__),
+            self.tr(__title__),
+            self.run,
+            icon_path=icon_path,
+            parent=self.iface.mainWindow())
+        self.mainAction.setCheckable(True)
+
+        self.add_action(
             self.tr("Configuration") + "...",
-            self.iface.mainWindow(),
-        )
-        self.act_nominatim_help = QAction(
+            self.tr(__title__),
+            self.do_config,
+            add_to_toolbar=False,
+            parent=self.iface.mainWindow())
+
+        self.add_action(
             self.tr("Help") + "...",
-            self.iface.mainWindow(),
-        )
+            self.tr(__title__),
+            self.do_help,
+            add_to_toolbar=False,
+            parent=self.iface.mainWindow())
 
-        self.iface.addPluginToMenu(
-            "&" + self.tr(__title__),
-            self.act_config,
-        )
-        self.iface.addPluginToMenu(
-            "&" + self.tr(__title__),
-            self.act_nominatim_help,
-        )
+        # Create the dockwidget 
+        self.dockwidget = NominatimDialog(self.iface.mainWindow(), self)
 
-        # Add actions to the toolbar
-        self.act_config.triggered.connect(self.do_config)
-        self.act_nominatim_help.triggered.connect(
-            lambda: tools.showPluginHelp(filename="doc/index")
-        )
+        # connect events
+        self.dockwidget.closingPlugin.connect(self.onClosePlugin)
+        self.dockwidget.dockLocationChanged.connect(self.dockLocationChanged)
+        self.dockwidget.visibilityChanged.connect(self.dockVisibilityChanged)
 
-        self.iface.addDockWidget(self.defaultArea, self.nominatim_dlg)
+    def onClosePlugin(self):
+        self.dockwidget.hide()
 
     def unload(self):
-        self.iface.removePluginMenu(
-            "&" + self.tr(__title__),
-            self.act_config,
-        )
-        self.iface.removePluginMenu(
-            "&" + self.tr(__title__),
-            self.act_nominatim_help,
-        )
-        self.store()
-        self.deactivate()
-        self.iface.removeDockWidget(self.nominatim_dlg)
+        """Removes the plugin menu item and icon from QGIS GUI."""
 
-    def dockVisibilityChanged(self, visible):
-        try:
-            self.defaultActive = visible
-            if visible and self.localiseOnStartup:
-                self.nominatim_dlg.doLocalize()
-        except:
-            pass
+        for action in self.actions:
+            self.iface.removePluginMenu(self.tr(__title__), action)
+            self.iface.removeToolBarIcon(action)
+
+        self.store()
+
+    def run(self):
+        """Run method that loads and starts the plugin"""
+
+        if not self.pluginIsActive:
+            # show the dockwidget
+            self.iface.addDockWidget(self.defaultArea, self.dockwidget)
+            self.dockwidget.show()
+        else:
+            # hide only
+            self.onClosePlugin()
 
     def dockLocationChanged(self, area):
         self.defaultArea = area
 
-    def activate(self):
-        self.nominatim_dlg.show()
-
-    def deactivate(self):
+    def dockVisibilityChanged(self, visible):
+        self.pluginIsActive = visible
+        self.mainAction.setChecked(visible)
         try:
-            self.nominatim_dlg.hide()
+            if visible and self.localiseOnStartup:
+                self.dockwidget.doLocalize()
         except:
             pass
-
-    def zoom(self):
-        pass
 
     def do_config(self):
         dlg = nominatim_conf_dlg(self.iface.mainWindow(), self)
@@ -195,3 +263,6 @@ class Nominatim:
         dlg.show()
         dlg.exec_()
         del dlg
+
+    def do_help(self):
+        tools.showPluginHelp(filename="doc/index")

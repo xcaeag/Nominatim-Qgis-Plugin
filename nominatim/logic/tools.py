@@ -1,7 +1,7 @@
 import json
 import os
 
-from qgis.PyQt.QtCore import Qt, QVariant, QUrl, QUrlQuery, QSettings
+from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QSettings
 from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.PyQt.QtCore import QLocale, QUrl, QDir
 from qgis.PyQt.QtGui import QDesktopServices
