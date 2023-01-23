@@ -28,7 +28,7 @@ from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 from nominatim.logic import tools
 # from .osmLocatorFilter import OsmLocatorFilter
 
-from qgis.core import QgsMessageLog
+# from qgis.core import QgsMessageLog
 
 class Nominatim:
     def __init__(self, iface):
@@ -70,16 +70,20 @@ class Nominatim:
         self.actions = []
 
         self.pluginIsActive = False
-        self.dockwidget = None
+
+        # Create the dockwidget 
+        self.dockwidget = NominatimDialog(self.iface.mainWindow(), self)
+        # self.dockwidget.deleteLater()
+
+        # connect events
+        self.dockwidget.closingPlugin.connect(self.onClosePlugin)
+        self.dockwidget.dockLocationChanged.connect(self.dockLocationChanged)
+        self.dockwidget.visibilityChanged.connect(self.dockVisibilityChanged)
+        self.iface.addDockWidget(self.defaultArea, self.dockwidget)
 
         # self.filter = OsmLocatorFilter(self.iface, self)
         # self.filter.resultProblem.connect(self.showLocatorProblem)
         # self.iface.registerLocatorFilter(self.filter)
-
-    # def showLocatorProblem(self, err):
-    #    self.iface.messageBar().pushWarning(
-    #        "{} - {}".format(self.tr("Error during OSM search"), err)
-    #    )
 
     @staticmethod
     def tr(message):
@@ -213,19 +217,13 @@ class Nominatim:
             add_to_toolbar=False,
             parent=self.iface.mainWindow())
 
-        # Create the dockwidget 
-        self.dockwidget = NominatimDialog(self.iface.mainWindow(), self)
-
-        # connect events
-        self.dockwidget.closingPlugin.connect(self.onClosePlugin)
-        self.dockwidget.dockLocationChanged.connect(self.dockLocationChanged)
-        self.dockwidget.visibilityChanged.connect(self.dockVisibilityChanged)
-
     def onClosePlugin(self):
         self.dockwidget.hide()
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+        self.dockwidget.hide()
+        self.dockwidget.deleteLater()
 
         for action in self.actions:
             self.iface.removePluginMenu(self.tr(__title__), action)
@@ -238,7 +236,6 @@ class Nominatim:
 
         if not self.pluginIsActive:
             # show the dockwidget
-            self.iface.addDockWidget(self.defaultArea, self.dockwidget)
             self.dockwidget.show()
         else:
             # hide only
@@ -249,7 +246,8 @@ class Nominatim:
 
     def dockVisibilityChanged(self, visible):
         self.pluginIsActive = visible
-        self.mainAction.setChecked(visible)
+        if self.mainAction:
+            self.mainAction.setChecked(visible)
         try:
             if visible and self.localiseOnStartup:
                 self.dockwidget.doLocalize()
