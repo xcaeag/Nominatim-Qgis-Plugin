@@ -16,7 +16,6 @@ email                : xavier.culos@eau-adour-garonne.fr
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
 import os
 
 from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
