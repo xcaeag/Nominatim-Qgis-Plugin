@@ -1,18 +1,17 @@
 import json
 import os
 
-from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QSettings, QLocale, QDir
-from qgis.PyQt.QtNetwork import QNetworkRequest
-from qgis.PyQt.QtGui import QDesktopServices
-
 from qgis.core import (
-    QgsProject,
     QgsApplication,
-    QgsMessageLog,
-    QgsNetworkAccessManager,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
+    QgsMessageLog,
+    QgsNetworkAccessManager,
+    QgsProject,
 )
+from qgis.PyQt.QtCore import QDir, QLocale, QSettings, Qt, QUrl, QUrlQuery
+from qgis.PyQt.QtGui import QDesktopServices
+from qgis.PyQt.QtNetwork import QNetworkRequest
 
 limitSearchToExtent = False
 gnOptions = ""

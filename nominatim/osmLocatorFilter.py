@@ -3,14 +3,13 @@ crash QGis. Nonfonctional.
 """
 
 from qgis.core import (
-    QgsProject,
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
     QgsGeometry,
     QgsLocatorFilter,
     QgsLocatorResult,
-    QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,
+    QgsProject,
 )
-
 from qgis.PyQt.QtCore import pyqtSignal
 
 from nominatim.logic import tools

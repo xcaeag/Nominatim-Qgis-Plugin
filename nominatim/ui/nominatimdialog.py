@@ -1,31 +1,24 @@
-from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QVariant, pyqtSignal, QEvent
-from qgis.PyQt.QtWidgets import (
-    QDockWidget,
-    QHeaderView,
-    QApplication,
-    QTableWidgetItem,
-)
-from qgis.PyQt.QtGui import QIcon, QColor
-
+from osgeo import ogr
 from qgis.core import (
-    QgsProject,
     QgsApplication,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
-    QgsMessageLog,
-    QgsGeometry,
-    QgsRectangle,
-    QgsVectorLayer,
+    QgsFeature,
     QgsField,
     QgsFields,
-    QgsFeature,
-    QgsWkbTypes,
+    QgsGeometry,
+    QgsMessageLog,
+    QgsProject,
+    QgsRectangle,
     QgsUnitTypes,
+    QgsVectorLayer,
+    QgsWkbTypes,
 )
-
 from qgis.gui import QgsRubberBand
-from osgeo import ogr
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QEvent, Qt, QVariant, pyqtSignal
+from qgis.PyQt.QtGui import QColor, QIcon
+from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QHeaderView, QTableWidgetItem
 
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 from nominatim.logic import tools
