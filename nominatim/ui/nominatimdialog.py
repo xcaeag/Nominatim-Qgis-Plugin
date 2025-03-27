@@ -1,5 +1,5 @@
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QVariant, pyqtSignal
+from qgis.PyQt.QtCore import Qt, QVariant, pyqtSignal, QEvent
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
     QHeaderView,
@@ -43,11 +43,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
     def eventFilter(self, obj, event):
         typ = event.type()
-        if typ == event.Leave:
-            try:
-                self.plugin.canvas.scene().removeItem(self.rubber)
-            except:
-                pass
+        if typ == QEvent.Type.Leave:
+            self.rbPoint.reset()
+            self.rbPolygon.reset()
 
         return False
 
@@ -90,6 +88,20 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             QgsWkbTypes.GeometryType.PointGeometry: "Point",
         }
 
+        self.rbPoint = QgsRubberBand(
+            self.plugin.canvas, QgsWkbTypes.GeometryType.PointGeometry
+        )
+        self.rbPoint.setColor(QColor(50, 50, 255, 100))
+        self.rbPoint.setIcon(self.rbPoint.ICON_CIRCLE)
+        self.rbPoint.setIconSize(15)
+        self.rbPoint.setWidth(2)
+
+        self.rbPolygon = QgsRubberBand(
+            self.plugin.canvas, QgsWkbTypes.GeometryType.PolygonGeometry
+        )
+        self.rbPolygon.setColor(QColor(50, 50, 255, 100))
+        self.rbPolygon.setWidth(4)
+
         try:
             self.cbExtent.setChecked(tools.limitSearchToExtent)
         except:
@@ -109,11 +121,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
     def cellEntered(self, row, col):
         item = self.tableResult.item(row, 0)
 
-        try:
-            self.plugin.canvas.scene().removeItem(self.rubber)
-            self.showItem(item)
-        except:
-            pass
+        self.rbPoint.reset()
+        self.rbPolygon.reset()
+        self.showItem(item)
 
     def onLayer(self):
         for r in self.tableResult.selectedRanges():
@@ -140,7 +150,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             typeName = ""
 
         wkt = item.get("geotext")
-        #osm_type = item.get("osm_type")
+        # osm_type = item.get("osm_type")
 
         # extratags and address_details are dictionaries with content that can
         # vary per feature and also per nominatim server. We expose them as
@@ -317,12 +327,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.transform(geom)
 
         if ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint:
-            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.GeometryType.PointGeometry)
-            self.rubber.setColor(QColor(50, 50, 255, 100))
-            self.rubber.setIcon(self.rubber.ICON_CIRCLE)
-            self.rubber.setIconSize(15)
-            self.rubber.setWidth(2)
-            self.rubber.setToGeometry(geom, None)
+            self.rbPoint.setToGeometry(geom, None)
         else:
             # dont show if it is larger than the canvas
             if self.plugin.canvas.extent().contains(geom.boundingBox()):
@@ -331,17 +336,11 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
                 geom = geom.intersection(
                     QgsGeometry.fromRect(self.plugin.canvas.extent())
                 )
-
-            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
-            self.rubber.setColor(QColor(50, 50, 255, 100))
-            self.rubber.setWidth(4)
-            self.rubber.setToGeometry(geom, None)
+            self.rbPolygon.setToGeometry(geom, None)
 
     def go(self, item, zoom=True):
-        try:
-            self.plugin.canvas.scene().removeItem(self.rubber)
-        except:
-            pass
+        self.rbPoint.reset()
+        self.rbPolygon.reset()
 
         if zoom:
             bbox = self.getBBox(item)
