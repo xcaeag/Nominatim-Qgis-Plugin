@@ -18,7 +18,14 @@ email                : xavier.culos@eau-adour-garonne.fr
 """
 import os
 
-from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
+from qgis.PyQt.QtCore import (
+    QCoreApplication,
+    QFileInfo,
+    Qt,
+    QSettings,
+    QTranslator,
+    qVersion,
+)
 from qgis.PyQt.QtWidgets import QAction
 from qgis.PyQt.QtGui import QIcon
 from .ui.nominatimdialog import NominatimDialog
@@ -40,7 +47,10 @@ class Nominatim:
         self.localiseOnStartup = True
         self.singleLayer = True
         self.mainAction = None
-        self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea
+        if qVersion().split(".")[0] == "6":
+            self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea.value
+        else:
+            self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea
 
         self.read()
 
@@ -70,7 +80,7 @@ class Nominatim:
 
         self.pluginIsActive = False
 
-        # Create the dockwidget 
+        # Create the dockwidget
         self.dockwidget = NominatimDialog(self.iface.mainWindow(), self)
         # self.dockwidget.deleteLater()
 
@@ -78,7 +88,13 @@ class Nominatim:
         self.dockwidget.closingPlugin.connect(self.onClosePlugin)
         self.dockwidget.dockLocationChanged.connect(self.dockLocationChanged)
         self.dockwidget.visibilityChanged.connect(self.dockVisibilityChanged)
-        self.iface.addDockWidget(self.defaultArea, self.dockwidget)
+
+        if qVersion().split(".")[0] == "6":
+            self.iface.addDockWidget(
+                Qt.DockWidgetArea(self.defaultArea), self.dockwidget
+            )
+        else:
+            self.iface.addDockWidget(self.defaultArea, self.dockwidget)
 
         # self.filter = OsmLocatorFilter(self.iface, self)
         # self.filter.resultProblem.connect(self.showLocatorProblem)
@@ -110,7 +126,13 @@ class Nominatim:
         tools.gnOptions = s.value("nominatim/gnOptions", "")
         self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
         self.defaultArea = s.value(
-            "nominatim/defaultArea", Qt.DockWidgetArea.LeftDockWidgetArea, type=int
+            "nominatim/defaultArea",
+            (
+                Qt.DockWidgetArea.LeftDockWidgetArea.value
+                if (qVersion().split(".")[0] == "6")
+                else Qt.DockWidgetArea.LeftDockWidgetArea
+            ),
+            type=int,
         )
 
     def add_action(
