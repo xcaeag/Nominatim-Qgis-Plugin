@@ -16,11 +16,11 @@ from qgis.core import (
 )
 from qgis.gui import QgsRubberBand
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QEvent, Qt, pyqtSignal, QMetaType
+from qgis.PyQt.QtCore import QEvent, Qt, pyqtSignal, QVariant
 from qgis.PyQt.QtGui import QColor, QIcon
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QHeaderView, QTableWidgetItem
 
-from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+from nominatim.__about__ import DIR_PLUGIN_ROOT
 from nominatim.logic import tools
 
 FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/dockwidget.ui")
@@ -59,7 +59,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.editSearch.returnPressed.connect(self.onReturnPressed)
         self.btnSearch.clicked.connect(self.onReturnPressed)
         self.btnApply.clicked.connect(self.onApply)
-        self.btnHelp.clicked.connect(lambda: tools.showPluginHelp(filename="../doc/index"))
+        self.btnHelp.clicked.connect(
+            lambda: tools.showPluginHelp(filename="../doc/index")
+        )
 
         self.btnLocalize.clicked.connect(self.doLocalize)
         self.btnMask.clicked.connect(self.onMask)
@@ -97,7 +99,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
         try:
             self.cbExtent.setChecked(tools.limitSearchToExtent)
-        except:
+        except Exception:
             self.cbExtent.setChecked(tools.limitSearchToExtent)
 
         self.currentExtent = self.plugin.canvas.extent()
@@ -108,7 +110,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
         try:
             self.editSearch.setText(self.plugin.lastSearch)
-        except:
+        except Exception:
             pass
 
     def cellEntered(self, row, col):
@@ -134,12 +136,12 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
         try:
             className = QApplication.translate("nominatim", item["class"], None)
-        except:
+        except Exception:
             className = ""
 
         try:
             typeName = QApplication.translate("nominatim", item["type"], None)
-        except:
+        except Exception:
             typeName = ""
 
         wkt = item.get("geotext")
@@ -231,12 +233,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             bbox = xform.transform(bbox)
 
-            params = {
-                "lon": str(bbox.center().x()),
-                "lat": str(bbox.center().y())
-            }
+            params = {"lon": str(bbox.center().x()), "lat": str(bbox.center().y())}
             r = tools.osmFindNearbyJSON(params)
-            if r != None:
+            if r is not None:
                 self.populateTable(r)
             else:
                 self.tableResult.clearContents()
@@ -261,7 +260,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
     def onReturnPressed(self):
         txt = self.editSearch.text().strip()
         r = self.search(txt)
-        if r != None:
+        if r is not None:
             self.populateTable(r)
         else:
             self.tableResult.clearContents()
@@ -365,12 +364,12 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.transform(geom)
 
         fields = QgsFields()
-        fields.append(QgsField("osm_id", QMetaType.Type.LongLong))
-        fields.append(QgsField("class", QMetaType.Type.QString))
-        fields.append(QgsField("type", QMetaType.Type.QString))
-        fields.append(QgsField("name", QMetaType.Type.QString))
-        fields.append(QgsField("address", QMetaType.Type.QString))
-        fields.append(QgsField("extratags", QMetaType.Type.QString))
+        fields.append(QgsField("osm_id", QVariant.LongLong))
+        fields.append(QgsField("class", QVariant.String))
+        fields.append(QgsField("type", QVariant.String))
+        fields.append(QgsField("name", QVariant.String))
+        fields.append(QgsField("address", QVariant.String))
+        fields.append(QgsField("extratags", QVariant.String))
         fet = QgsFeature()
         fet.initAttributes(2)
         fet.setFields(fields)
@@ -439,17 +438,15 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             try:
                 try:
                     from mask import aeag_mask
-                except:
+                except Exception:
                     from mask_plugin import aeag_mask
 
                 aeag_mask.do(mapcrs, {geom}, "Mask " + layerName)
                 self.go(item)
 
-            except:
+            except Exception:
                 maskLayer = self.doLayer(item, True)
-                maskLayer.loadNamedStyle(
-                    str(DIR_PLUGIN_ROOT / "resources" / "mask.qml")
-                )
+                maskLayer.loadNamedStyle(str(DIR_PLUGIN_ROOT / "resources" / "mask.qml"))
                 maskLayer.triggerRepaint()
 
     def closeEvent(self, event):
