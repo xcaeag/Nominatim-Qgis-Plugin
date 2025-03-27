@@ -1,4 +1,4 @@
-﻿from qgis.PyQt import uic
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QVariant, pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
@@ -75,19 +75,19 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.btnLayer.clicked.connect(self.onLayer)
 
         self.singleLayerId = {
-            QgsWkbTypes.PolygonGeometry: None,
-            QgsWkbTypes.LineGeometry: None,
-            QgsWkbTypes.PointGeometry: None,
+            QgsWkbTypes.GeometryType.PolygonGeometry: None,
+            QgsWkbTypes.GeometryType.LineGeometry: None,
+            QgsWkbTypes.GeometryType.PointGeometry: None,
         }
         self.singleLayerName = {
-            QgsWkbTypes.PolygonGeometry: "OSM Place Search Polygons",
-            QgsWkbTypes.LineGeometry: "OSM Place Search Lines",
-            QgsWkbTypes.PointGeometry: "OSM Place Search Points",
+            QgsWkbTypes.GeometryType.PolygonGeometry: "OSM Place Search Polygons",
+            QgsWkbTypes.GeometryType.LineGeometry: "OSM Place Search Lines",
+            QgsWkbTypes.GeometryType.PointGeometry: "OSM Place Search Points",
         }
         self.memoryLayerType = {
-            QgsWkbTypes.PolygonGeometry: "MultiPolygon",
-            QgsWkbTypes.LineGeometry: "MultiLineString",
-            QgsWkbTypes.PointGeometry: "Point",
+            QgsWkbTypes.GeometryType.PolygonGeometry: "MultiPolygon",
+            QgsWkbTypes.GeometryType.LineGeometry: "MultiLineString",
+            QgsWkbTypes.GeometryType.PointGeometry: "Point",
         }
 
         try:
@@ -98,7 +98,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.currentExtent = self.plugin.canvas.extent()
 
         self.tableResult.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeToContents
+            QHeaderView.ResizeMode.ResizeToContents
         )
 
         try:
@@ -199,16 +199,16 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         ogrFeature.SetField("extratags", extratags)
 
         item = QTableWidgetItem(name)
-        item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
-        item.setData(Qt.UserRole, ogrFeature)
+        item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+        item.setData(Qt.ItemDataRole.UserRole, ogrFeature)
         self.tableResult.setItem(idx, 0, item)
 
         itemLibelle = QTableWidgetItem(className)
-        itemLibelle.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        itemLibelle.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         self.tableResult.setItem(idx, 1, itemLibelle)
 
         itemType = QTableWidgetItem(typeName)
-        itemType.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        itemType.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         self.tableResult.setItem(idx, 2, itemType)
 
     def populateTable(self, r):
@@ -284,7 +284,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             )
 
     def getBBox(self, item):
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
@@ -297,9 +297,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             y = geom.boundingBox().center().y()
 
             ww = 50.0
-            if mapcrs.mapUnits() == QgsUnitTypes.DistanceFeet:
+            if mapcrs.mapUnits() == QgsUnitTypes.DistanceUnit.DistanceFeet:
                 ww = 150
-            if mapcrs.mapUnits() == QgsUnitTypes.DistanceDegrees:
+            if mapcrs.mapUnits() == QgsUnitTypes.DistanceUnit.DistanceDegrees:
                 ww = 0.0005
 
             bbox = QgsRectangle(x - 10 * ww, y - 10 * ww, x + 10 * ww, y + 10 * ww)
@@ -312,12 +312,12 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             return rubberRect
 
     def showItem(self, item):
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
         if ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint:
-            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PointGeometry)
+            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.GeometryType.PointGeometry)
             self.rubber.setColor(QColor(50, 50, 255, 100))
             self.rubber.setIcon(self.rubber.ICON_CIRCLE)
             self.rubber.setIconSize(15)
@@ -332,7 +332,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
                     QgsGeometry.fromRect(self.plugin.canvas.extent())
                 )
 
-            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PolygonGeometry)
+            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.GeometryType.PolygonGeometry)
             self.rubber.setColor(QColor(50, 50, 255, 100))
             self.rubber.setWidth(4)
             self.rubber.setToGeometry(geom, None)
@@ -368,7 +368,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         if singleLayer is None:
             singleLayer = self.plugin.singleLayer
 
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
@@ -438,12 +438,12 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
     def doMask(self, item):
         mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
 
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         layerName = "OSM " + ogrFeature.GetFieldAsString("osm_id")
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
-        if geom.type() == QgsWkbTypes.PolygonGeometry:
+        if geom.type() == QgsWkbTypes.GeometryType.PolygonGeometry:
             try:
                 try:
                     from mask import aeag_mask

@@ -20,7 +20,7 @@ gnOptions = ""
 
 def getHttp(uri, params):
     nam = QgsNetworkAccessManager.instance()
-    QgsApplication.setOverrideCursor(Qt.WaitCursor)
+    QgsApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
     try:
         rq = QUrl(uri)
         q = QUrlQuery()
@@ -198,5 +198,5 @@ def showPluginHelp(packageName: str = None, filename: str = "index", section: st
         url = QDir.fromNativeSeparators(helpfile)
         if section != "":
             url = url + "#" + section
-        if not QDesktopServices.openUrl(QUrl("file:///"+url, QUrl.TolerantMode)):
-            QDesktopServices.openUrl(QUrl("file://"+url, QUrl.TolerantMode))
+        if not QDesktopServices.openUrl(QUrl("file:///"+url, QUrl.ParsingMode.TolerantMode)):
+            QDesktopServices.openUrl(QUrl("file://"+url, QUrl.ParsingMode.TolerantMode))

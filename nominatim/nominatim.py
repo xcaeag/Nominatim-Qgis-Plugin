@@ -1,4 +1,4 @@
-﻿"""
+"""
 /***************************************************************************
 Name			 	 : nominatim
 Description          : Aide à la localisation
@@ -40,7 +40,7 @@ class Nominatim:
         self.localiseOnStartup = True
         self.singleLayer = True
         self.mainAction = None
-        self.defaultArea = Qt.LeftDockWidgetArea
+        self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea
 
         self.read()
 
@@ -110,7 +110,7 @@ class Nominatim:
         tools.gnOptions = s.value("nominatim/gnOptions", "")
         self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
         self.defaultArea = s.value(
-            "nominatim/defaultArea", Qt.LeftDockWidgetArea, type=int
+            "nominatim/defaultArea", Qt.DockWidgetArea.LeftDockWidgetArea, type=int
         )
 
     def add_action(
@@ -258,7 +258,7 @@ class Nominatim:
         dlg.setModal(True)
 
         dlg.show()
-        dlg.exec_()
+        dlg.exec()
         del dlg
 
     def do_help(self):
