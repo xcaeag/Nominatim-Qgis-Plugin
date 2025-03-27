@@ -4,9 +4,11 @@ qgisMinimumVersion=3.6
 qgisMaximumVersion=3.98
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (https://operations.osmfoundation.org/policies/nominatim/)
-version=1.4.5
+version=1.5.0
+supportsQt6=True
 
 changelog=
+    1.5.0 : support Qt6
     1.4.5 : fix #19
     1.4.4 : fix panel management pb
     1.4.3 : fix help loading on Windows. Thanks to https://github.com/AlisterH
