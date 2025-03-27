@@ -18,20 +18,25 @@ email                : xavier.culos@eau-adour-garonne.fr
 """
 import os
 
+from qgis.core import QgsSettings
 from qgis.PyQt.QtCore import (
     QCoreApplication,
     QFileInfo,
-    Qt,
+    QLocale,
     QSettings,
+    Qt,
     QTranslator,
     qVersion,
 )
-from qgis.PyQt.QtWidgets import QAction
 from qgis.PyQt.QtGui import QIcon
-from .ui.nominatimdialog import NominatimDialog
-from .ui.nominatim_conf_dlg import nominatim_conf_dlg
+from qgis.PyQt.QtWidgets import QAction
+
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 from nominatim.logic import tools
+
+from .ui.nominatim_conf_dlg import nominatim_conf_dlg
+from .ui.nominatimdialog import NominatimDialog
+
 # from .osmLocatorFilter import OsmLocatorFilter
 
 # from qgis.core import QgsMessageLog
@@ -55,7 +60,7 @@ class Nominatim:
         self.read()
 
         # récup langue par défaut
-        locale = QSettings().value("locale/userLocale")
+        locale = QgsSettings().value("locale/userLocale", QLocale().name())
         try:
             self.myLocale = locale[0:2]
 
