@@ -1,33 +1,26 @@
-﻿from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QVariant, pyqtSignal
-from qgis.PyQt.QtWidgets import (
-    QDockWidget,
-    QHeaderView,
-    QApplication,
-    QTableWidgetItem,
-)
-from qgis.PyQt.QtGui import QIcon, QColor
-
+from osgeo import ogr
 from qgis.core import (
-    QgsProject,
     QgsApplication,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
-    QgsMessageLog,
-    QgsGeometry,
-    QgsRectangle,
-    QgsVectorLayer,
+    QgsFeature,
     QgsField,
     QgsFields,
-    QgsFeature,
-    QgsWkbTypes,
+    QgsGeometry,
+    QgsMessageLog,
+    QgsProject,
+    QgsRectangle,
     QgsUnitTypes,
+    QgsVectorLayer,
+    QgsWkbTypes,
 )
-
 from qgis.gui import QgsRubberBand
-from osgeo import ogr
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QEvent, Qt, pyqtSignal, QVariant
+from qgis.PyQt.QtGui import QColor, QIcon
+from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QHeaderView, QTableWidgetItem
 
-from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
+from nominatim.__about__ import DIR_PLUGIN_ROOT
 from nominatim.logic import tools
 
 FORM_CLASS, _ = uic.loadUiType(DIR_PLUGIN_ROOT / "ui/dockwidget.ui")
@@ -43,11 +36,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
     def eventFilter(self, obj, event):
         typ = event.type()
-        if typ == event.Leave:
-            try:
-                self.plugin.canvas.scene().removeItem(self.rubber)
-            except:
-                pass
+        if typ == QEvent.Type.Leave:
+            self.rbPoint.reset()
+            self.rbPolygon.reset()
 
         return False
 
@@ -68,52 +59,66 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.editSearch.returnPressed.connect(self.onReturnPressed)
         self.btnSearch.clicked.connect(self.onReturnPressed)
         self.btnApply.clicked.connect(self.onApply)
-        self.btnHelp.clicked.connect(lambda: tools.showPluginHelp(filename="../doc/index"))
+        self.btnHelp.clicked.connect(
+            lambda: tools.showPluginHelp(filename="../doc/index")
+        )
 
         self.btnLocalize.clicked.connect(self.doLocalize)
         self.btnMask.clicked.connect(self.onMask)
         self.btnLayer.clicked.connect(self.onLayer)
 
         self.singleLayerId = {
-            QgsWkbTypes.PolygonGeometry: None,
-            QgsWkbTypes.LineGeometry: None,
-            QgsWkbTypes.PointGeometry: None,
+            QgsWkbTypes.GeometryType.PolygonGeometry: None,
+            QgsWkbTypes.GeometryType.LineGeometry: None,
+            QgsWkbTypes.GeometryType.PointGeometry: None,
         }
         self.singleLayerName = {
-            QgsWkbTypes.PolygonGeometry: "OSM Place Search Polygons",
-            QgsWkbTypes.LineGeometry: "OSM Place Search Lines",
-            QgsWkbTypes.PointGeometry: "OSM Place Search Points",
+            QgsWkbTypes.GeometryType.PolygonGeometry: "OSM Place Search Polygons",
+            QgsWkbTypes.GeometryType.LineGeometry: "OSM Place Search Lines",
+            QgsWkbTypes.GeometryType.PointGeometry: "OSM Place Search Points",
         }
         self.memoryLayerType = {
-            QgsWkbTypes.PolygonGeometry: "MultiPolygon",
-            QgsWkbTypes.LineGeometry: "MultiLineString",
-            QgsWkbTypes.PointGeometry: "Point",
+            QgsWkbTypes.GeometryType.PolygonGeometry: "MultiPolygon",
+            QgsWkbTypes.GeometryType.LineGeometry: "MultiLineString",
+            QgsWkbTypes.GeometryType.PointGeometry: "Point",
         }
+
+        self.rbPoint = QgsRubberBand(
+            self.plugin.canvas, QgsWkbTypes.GeometryType.PointGeometry
+        )
+        self.rbPoint.setColor(QColor(50, 50, 255, 100))
+        self.rbPoint.setIcon(self.rbPoint.ICON_CIRCLE)
+        self.rbPoint.setIconSize(15)
+        self.rbPoint.setWidth(2)
+
+        self.rbPolygon = QgsRubberBand(
+            self.plugin.canvas, QgsWkbTypes.GeometryType.PolygonGeometry
+        )
+        self.rbPolygon.setColor(QColor(50, 50, 255, 100))
+        self.rbPolygon.setWidth(4)
 
         try:
             self.cbExtent.setChecked(tools.limitSearchToExtent)
-        except:
+        except Exception:
             self.cbExtent.setChecked(tools.limitSearchToExtent)
 
         self.currentExtent = self.plugin.canvas.extent()
 
         self.tableResult.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeToContents
+            QHeaderView.ResizeMode.ResizeToContents
         )
 
         try:
             self.editSearch.setText(self.plugin.lastSearch)
-        except:
+        except Exception:
             pass
 
     def cellEntered(self, row, col):
         item = self.tableResult.item(row, 0)
 
-        try:
-            self.plugin.canvas.scene().removeItem(self.rubber)
-            self.showItem(item)
-        except:
-            pass
+        self.rbPoint.reset()
+        self.rbPolygon.reset()
+        self.showItem(item)
 
     def onLayer(self):
         for r in self.tableResult.selectedRanges():
@@ -131,16 +136,16 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
         try:
             className = QApplication.translate("nominatim", item["class"], None)
-        except:
+        except Exception:
             className = ""
 
         try:
             typeName = QApplication.translate("nominatim", item["type"], None)
-        except:
+        except Exception:
             typeName = ""
 
         wkt = item.get("geotext")
-        #osm_type = item.get("osm_type")
+        # osm_type = item.get("osm_type")
 
         # extratags and address_details are dictionaries with content that can
         # vary per feature and also per nominatim server. We expose them as
@@ -199,16 +204,16 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         ogrFeature.SetField("extratags", extratags)
 
         item = QTableWidgetItem(name)
-        item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
-        item.setData(Qt.UserRole, ogrFeature)
+        item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+        item.setData(Qt.ItemDataRole.UserRole, ogrFeature)
         self.tableResult.setItem(idx, 0, item)
 
         itemLibelle = QTableWidgetItem(className)
-        itemLibelle.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        itemLibelle.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         self.tableResult.setItem(idx, 1, itemLibelle)
 
         itemType = QTableWidgetItem(typeName)
-        itemType.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        itemType.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         self.tableResult.setItem(idx, 2, itemType)
 
     def populateTable(self, r):
@@ -228,12 +233,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             xform = QgsCoordinateTransform(sourceCrs, targetCrs, QgsProject.instance())
             bbox = xform.transform(bbox)
 
-            params = {
-                "lon": str(bbox.center().x()),
-                "lat": str(bbox.center().y())
-            }
+            params = {"lon": str(bbox.center().x()), "lat": str(bbox.center().y())}
             r = tools.osmFindNearbyJSON(params)
-            if r != None:
+            if r is not None:
                 self.populateTable(r)
             else:
                 self.tableResult.clearContents()
@@ -258,7 +260,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
     def onReturnPressed(self):
         txt = self.editSearch.text().strip()
         r = self.search(txt)
-        if r != None:
+        if r is not None:
             self.populateTable(r)
         else:
             self.tableResult.clearContents()
@@ -284,7 +286,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             )
 
     def getBBox(self, item):
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
@@ -297,9 +299,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             y = geom.boundingBox().center().y()
 
             ww = 50.0
-            if mapcrs.mapUnits() == QgsUnitTypes.DistanceFeet:
+            if mapcrs.mapUnits() == QgsUnitTypes.DistanceUnit.DistanceFeet:
                 ww = 150
-            if mapcrs.mapUnits() == QgsUnitTypes.DistanceDegrees:
+            if mapcrs.mapUnits() == QgsUnitTypes.DistanceUnit.DistanceDegrees:
                 ww = 0.0005
 
             bbox = QgsRectangle(x - 10 * ww, y - 10 * ww, x + 10 * ww, y + 10 * ww)
@@ -312,17 +314,12 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             return rubberRect
 
     def showItem(self, item):
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
         if ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint:
-            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PointGeometry)
-            self.rubber.setColor(QColor(50, 50, 255, 100))
-            self.rubber.setIcon(self.rubber.ICON_CIRCLE)
-            self.rubber.setIconSize(15)
-            self.rubber.setWidth(2)
-            self.rubber.setToGeometry(geom, None)
+            self.rbPoint.setToGeometry(geom, None)
         else:
             # dont show if it is larger than the canvas
             if self.plugin.canvas.extent().contains(geom.boundingBox()):
@@ -331,17 +328,11 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
                 geom = geom.intersection(
                     QgsGeometry.fromRect(self.plugin.canvas.extent())
                 )
-
-            self.rubber = QgsRubberBand(self.plugin.canvas, QgsWkbTypes.PolygonGeometry)
-            self.rubber.setColor(QColor(50, 50, 255, 100))
-            self.rubber.setWidth(4)
-            self.rubber.setToGeometry(geom, None)
+            self.rbPolygon.setToGeometry(geom, None)
 
     def go(self, item, zoom=True):
-        try:
-            self.plugin.canvas.scene().removeItem(self.rubber)
-        except:
-            pass
+        self.rbPoint.reset()
+        self.rbPolygon.reset()
 
         if zoom:
             bbox = self.getBBox(item)
@@ -368,7 +359,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         if singleLayer is None:
             singleLayer = self.plugin.singleLayer
 
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
@@ -438,26 +429,24 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
     def doMask(self, item):
         mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
 
-        ogrFeature = item.data(Qt.UserRole)
+        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         layerName = "OSM " + ogrFeature.GetFieldAsString("osm_id")
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
-        if geom.type() == QgsWkbTypes.PolygonGeometry:
+        if geom.type() == QgsWkbTypes.GeometryType.PolygonGeometry:
             try:
                 try:
                     from mask import aeag_mask
-                except:
+                except Exception:
                     from mask_plugin import aeag_mask
 
                 aeag_mask.do(mapcrs, {geom}, "Mask " + layerName)
                 self.go(item)
 
-            except:
+            except Exception:
                 maskLayer = self.doLayer(item, True)
-                maskLayer.loadNamedStyle(
-                    str(DIR_PLUGIN_ROOT / "resources" / "mask.qml")
-                )
+                maskLayer.loadNamedStyle(str(DIR_PLUGIN_ROOT / "resources" / "mask.qml"))
                 maskLayer.triggerRepaint()
 
     def closeEvent(self, event):

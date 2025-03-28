@@ -3,19 +3,14 @@ crash QGis. Nonfonctional.
 """
 
 from qgis.core import (
-    Qgis,
-    QgsProject,
-    QgsGeometry,
-    QgsRectangle,
-    QgsMessageLog,
-    QgsLocatorFilter,
-    QgsLocatorResult,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
+    QgsGeometry,
+    QgsLocatorFilter,
+    QgsLocatorResult,
+    QgsProject,
 )
-
 from qgis.PyQt.QtCore import pyqtSignal
-from osgeo import osr
 
 from nominatim.logic import tools
 

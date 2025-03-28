@@ -1,4 +1,4 @@
-﻿"""
+"""
 /***************************************************************************
 Name			 	 : nominatim
 Description          : Aide à la localisation
@@ -18,13 +18,25 @@ email                : xavier.culos@eau-adour-garonne.fr
 """
 import os
 
-from qgis.PyQt.QtCore import QCoreApplication, QFileInfo, Qt, QSettings, QTranslator
-from qgis.PyQt.QtWidgets import QAction
+from qgis.core import QgsSettings
+from qgis.PyQt.QtCore import (
+    QCoreApplication,
+    QFileInfo,
+    QLocale,
+    QSettings,
+    Qt,
+    QTranslator,
+    qVersion,
+)
 from qgis.PyQt.QtGui import QIcon
-from .ui.nominatimdialog import NominatimDialog
-from .ui.nominatim_conf_dlg import nominatim_conf_dlg
+from qgis.PyQt.QtWidgets import QAction
+
 from nominatim.__about__ import DIR_PLUGIN_ROOT, __title__, __version__
 from nominatim.logic import tools
+
+from .ui.nominatim_conf_dlg import nominatim_conf_dlg
+from .ui.nominatimdialog import NominatimDialog
+
 # from .osmLocatorFilter import OsmLocatorFilter
 
 # from qgis.core import QgsMessageLog
@@ -33,29 +45,25 @@ class Nominatim:
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
-        self.path = QFileInfo(os.path.realpath(__file__)).path()
         self.toolbar = self.iface.pluginToolBar()
         self.canvas = self.iface.mapCanvas()
         self.lastSearch = ""
         self.localiseOnStartup = True
         self.singleLayer = True
         self.mainAction = None
-        self.defaultArea = Qt.LeftDockWidgetArea
+        if qVersion().split(".")[0] == "6":
+            self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea.value
+        else:
+            self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea
 
         self.read()
 
         # récup langue par défaut
-        locale = QSettings().value("locale/userLocale")
+        locale = QgsSettings().value("locale/userLocale", QLocale().name())
         try:
-            self.myLocale = locale[0:2]
-
             # exploiter le bon dictionnaire
-            localePath = (
-                QFileInfo(os.path.realpath(__file__)).path()
-                + "/i18n/"
-                + self.myLocale
-                + ".qm"
-            )
+            self.myLocale = locale[0:2]
+            localePath = str(DIR_PLUGIN_ROOT / "i18n" / f"{self.myLocale}.qm")
 
             # initialiser le traducteur
             if QFileInfo(localePath).exists():
@@ -70,7 +78,7 @@ class Nominatim:
 
         self.pluginIsActive = False
 
-        # Create the dockwidget 
+        # Create the dockwidget
         self.dockwidget = NominatimDialog(self.iface.mainWindow(), self)
         # self.dockwidget.deleteLater()
 
@@ -78,7 +86,13 @@ class Nominatim:
         self.dockwidget.closingPlugin.connect(self.onClosePlugin)
         self.dockwidget.dockLocationChanged.connect(self.dockLocationChanged)
         self.dockwidget.visibilityChanged.connect(self.dockVisibilityChanged)
-        self.iface.addDockWidget(self.defaultArea, self.dockwidget)
+
+        if qVersion().split(".")[0] == "6":
+            self.iface.addDockWidget(
+                Qt.DockWidgetArea(self.defaultArea), self.dockwidget
+            )
+        else:
+            self.iface.addDockWidget(self.defaultArea, self.dockwidget)
 
         # self.filter = OsmLocatorFilter(self.iface, self)
         # self.filter.resultProblem.connect(self.showLocatorProblem)
@@ -110,7 +124,13 @@ class Nominatim:
         tools.gnOptions = s.value("nominatim/gnOptions", "")
         self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
         self.defaultArea = s.value(
-            "nominatim/defaultArea", Qt.LeftDockWidgetArea, type=int
+            "nominatim/defaultArea",
+            (
+                Qt.DockWidgetArea.LeftDockWidgetArea.value
+                if (qVersion().split(".")[0] == "6")
+                else Qt.DockWidgetArea.LeftDockWidgetArea
+            ),
+            type=int,
         )
 
     def add_action(
@@ -258,7 +278,7 @@ class Nominatim:
         dlg.setModal(True)
 
         dlg.show()
-        dlg.exec_()
+        dlg.exec()
         del dlg
 
     def do_help(self):

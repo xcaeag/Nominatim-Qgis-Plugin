@@ -1,18 +1,17 @@
 import json
 import os
 
-from qgis.PyQt.QtCore import Qt, QUrl, QUrlQuery, QSettings, QLocale, QDir
-from qgis.PyQt.QtNetwork import QNetworkRequest
-from qgis.PyQt.QtGui import QDesktopServices
-
 from qgis.core import (
-    QgsProject,
     QgsApplication,
-    QgsMessageLog,
-    QgsNetworkAccessManager,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
+    QgsMessageLog,
+    QgsNetworkAccessManager,
+    QgsProject,
 )
+from qgis.PyQt.QtCore import QDir, QLocale, QSettings, Qt, QUrl, QUrlQuery
+from qgis.PyQt.QtGui import QDesktopServices
+from qgis.PyQt.QtNetwork import QNetworkRequest
 
 limitSearchToExtent = False
 gnOptions = ""
@@ -20,7 +19,7 @@ gnOptions = ""
 
 def getHttp(uri, params):
     nam = QgsNetworkAccessManager.instance()
-    QgsApplication.setOverrideCursor(Qt.WaitCursor)
+    QgsApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
     try:
         rq = QUrl(uri)
         q = QUrlQuery()
@@ -198,5 +197,5 @@ def showPluginHelp(packageName: str = None, filename: str = "index", section: st
         url = QDir.fromNativeSeparators(helpfile)
         if section != "":
             url = url + "#" + section
-        if not QDesktopServices.openUrl(QUrl("file:///"+url, QUrl.TolerantMode)):
-            QDesktopServices.openUrl(QUrl("file://"+url, QUrl.TolerantMode))
+        if not QDesktopServices.openUrl(QUrl("file:///"+url, QUrl.ParsingMode.TolerantMode)):
+            QDesktopServices.openUrl(QUrl("file://"+url, QUrl.ParsingMode.TolerantMode))
