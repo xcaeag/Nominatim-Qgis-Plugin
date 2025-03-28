@@ -45,7 +45,6 @@ class Nominatim:
     def __init__(self, iface):
         # Save reference to the QGIS interface
         self.iface = iface
-        self.path = QFileInfo(os.path.realpath(__file__)).path()
         self.toolbar = self.iface.pluginToolBar()
         self.canvas = self.iface.mapCanvas()
         self.lastSearch = ""
@@ -62,15 +61,9 @@ class Nominatim:
         # récup langue par défaut
         locale = QgsSettings().value("locale/userLocale", QLocale().name())
         try:
-            self.myLocale = locale[0:2]
-
             # exploiter le bon dictionnaire
-            localePath = (
-                QFileInfo(os.path.realpath(__file__)).path()
-                + "/i18n/"
-                + self.myLocale
-                + ".qm"
-            )
+            self.myLocale = locale[0:2]
+            localePath = str(DIR_PLUGIN_ROOT / "i18n" / f"{self.myLocale}.qm")
 
             # initialiser le traducteur
             if QFileInfo(localePath).exists():
