@@ -16,7 +16,6 @@ email                : xavier.culos@eau-adour-garonne.fr
  *                                                                         *
  ***************************************************************************/
 """
-import os
 
 from qgis.core import QgsSettings
 from qgis.PyQt.QtCore import (
