@@ -314,6 +314,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             return rubberRect
 
     def showItem(self, item):
+        if not item:
+            return
+
         ogrFeature = item.data(Qt.ItemDataRole.UserRole)
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
