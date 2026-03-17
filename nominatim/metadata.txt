@@ -1,13 +1,14 @@
 [general]
 name=OSM place search
 qgisMinimumVersion=3.40
-qgisMaximumVersion=3.98
+qgisMaximumVersion=4.98
 description=Location search helper
 about=Based on OSM data, Nominatim online tool (https://operations.osmfoundation.org/policies/nominatim/)
-version=1.5.1-dev
+version=1.6.1-dev
 supportsQt6=True
 
 changelog=
+    1.6.0 : QGis 4.0 Compatible
     1.5.0 : support Qt6
     1.4.5 : fix #19
     1.4.4 : fix panel management pb
