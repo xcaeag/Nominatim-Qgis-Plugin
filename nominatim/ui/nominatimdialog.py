@@ -106,6 +106,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
         self.tableResult.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents
+            # QHeaderView.ResizeMode.Interactive
         )
 
         try:
