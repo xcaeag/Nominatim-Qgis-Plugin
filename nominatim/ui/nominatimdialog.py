@@ -17,6 +17,20 @@ from qgis.core import (
 from qgis.gui import QgsRubberBand
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QEvent, Qt, pyqtSignal, QMetaType
+
+# Compatibilité Qt5 / Qt6: certaines builds n'exposent pas QMetaType.Long
+VQT = 6
+try:
+    OSM_ID_FIELD_TYPE = QMetaType.Long
+except Exception:
+    try:
+        OSM_ID_FIELD_TYPE = QMetaType.LongLong
+    except Exception:
+        VQT = 5
+        from qgis.PyQt.QtCore import QVariant
+
+        OSM_ID_FIELD_TYPE = QVariant.LongLong
+
 from qgis.PyQt.QtGui import QColor, QIcon
 from qgis.PyQt.QtWidgets import QApplication, QDockWidget, QHeaderView, QTableWidgetItem
 
@@ -364,16 +378,26 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             singleLayer = self.plugin.singleLayer
 
         ogrFeature = item.data(Qt.ItemDataRole.UserRole)
+
         geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
         self.transform(geom)
 
         fields = QgsFields()
-        fields.append(QgsField("osm_id", QMetaType.LongLong))
-        fields.append(QgsField("class", QMetaType.QString))
-        fields.append(QgsField("type", QMetaType.QString))
-        fields.append(QgsField("name", QMetaType.QString))
-        fields.append(QgsField("address", QMetaType.QString))
-        fields.append(QgsField("extratags", QMetaType.QString))
+        if VQT == 6:
+            fields.append(QgsField("osm_id", OSM_ID_FIELD_TYPE))
+            fields.append(QgsField("class", QMetaType.QString))
+            fields.append(QgsField("type", QMetaType.QString))
+            fields.append(QgsField("name", QMetaType.QString))
+            fields.append(QgsField("address", QMetaType.QString))
+            fields.append(QgsField("extratags", QMetaType.QString))
+        else:
+            fields.append(QgsField("osm_id", OSM_ID_FIELD_TYPE))
+            fields.append(QgsField("class", QVariant.String))
+            fields.append(QgsField("type", QVariant.String))
+            fields.append(QgsField("name", QVariant.String))
+            fields.append(QgsField("address", QVariant.String))
+            fields.append(QgsField("extratags", QVariant.String))
+
         fet = QgsFeature()
         fet.initAttributes(2)
         fet.setFields(fields)
@@ -450,7 +474,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
             except Exception:
                 maskLayer = self.doLayer(item, True)
-                maskLayer.loadNamedStyle(str(DIR_PLUGIN_ROOT / "resources" / "mask.qml"))
+                maskLayer.loadNamedStyle(
+                    str(DIR_PLUGIN_ROOT / "resources" / "mask.qml")
+                )
                 maskLayer.triggerRepaint()
 
     def closeEvent(self, event):
