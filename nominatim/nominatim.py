@@ -50,10 +50,7 @@ class Nominatim:
         self.localiseOnStartup = True
         self.singleLayer = True
         self.mainAction = None
-        if qVersion().split(".")[0] == "6":
-            self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea.value
-        else:
-            self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea
+        self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea
 
         self.read()
 
@@ -86,12 +83,7 @@ class Nominatim:
         self.dockwidget.dockLocationChanged.connect(self.dockLocationChanged)
         self.dockwidget.visibilityChanged.connect(self.dockVisibilityChanged)
 
-        if qVersion().split(".")[0] == "6":
-            self.iface.addDockWidget(
-                Qt.DockWidgetArea(self.defaultArea), self.dockwidget
-            )
-        else:
-            self.iface.addDockWidget(self.defaultArea, self.dockwidget)
+        self.iface.addDockWidget(self.defaultArea, self.dockwidget)
 
         # self.filter = OsmLocatorFilter(self.iface, self)
         # self.filter.resultProblem.connect(self.showLocatorProblem)
@@ -122,15 +114,11 @@ class Nominatim:
         self.lastSearch = s.value("nominatim/lastSearch", "")
         tools.gnOptions = s.value("nominatim/gnOptions", "")
         self.singleLayer = s.value("nominatim/singleLayer", (True), type=bool)
-        self.defaultArea = s.value(
-            "nominatim/defaultArea",
-            (
-                Qt.DockWidgetArea.LeftDockWidgetArea.value
-                if (qVersion().split(".")[0] == "6")
-                else Qt.DockWidgetArea.LeftDockWidgetArea
-            ),
-            type=int,
-        )
+        stored_area = s.value("nominatim/defaultArea")
+        if isinstance(stored_area, Qt.DockWidgetArea):
+            self.defaultArea = stored_area
+        else:
+            self.defaultArea = Qt.DockWidgetArea.LeftDockWidgetArea
 
     def add_action(
         self,
