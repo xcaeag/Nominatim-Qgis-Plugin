@@ -25,7 +25,6 @@ from qgis.PyQt.QtCore import (
     QSettings,
     Qt,
     QTranslator,
-    qVersion,
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
