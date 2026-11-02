@@ -1,4 +1,3 @@
-from osgeo import ogr
 from qgis.core import (
     QgsApplication,
     QgsCoordinateReferenceSystem,
@@ -16,7 +15,7 @@ from qgis.core import (
 )
 from qgis.gui import QgsRubberBand
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QEvent, Qt, pyqtSignal, QMetaType
+from qgis.PyQt.QtCore import QEvent, Qt, pyqtSignal, QMetaType, QCoreApplication
 
 # Compatibilité Qt5 / Qt6: certaines builds n'exposent pas QMetaType.Long
 VQT = 6
@@ -52,6 +51,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         typ = event.type()
         if typ == QEvent.Type.Leave:
             self.rbPoint.reset()
+            self.rbLine.reset()
             self.rbPolygon.reset()
 
         return False
@@ -105,6 +105,12 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         self.rbPoint.setIconSize(15)
         self.rbPoint.setWidth(2)
 
+        self.rbLine = QgsRubberBand(
+            self.plugin.canvas, QgsWkbTypes.GeometryType.LineGeometry
+        )
+        self.rbLine.setColor(QColor(50, 50, 255, 100))
+        self.rbLine.setWidth(4)
+
         self.rbPolygon = QgsRubberBand(
             self.plugin.canvas, QgsWkbTypes.GeometryType.PolygonGeometry
         )
@@ -118,20 +124,29 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
         self.currentExtent = self.plugin.canvas.extent()
 
-        self.tableResult.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.ResizeToContents
-            # QHeaderView.ResizeMode.Interactive
+        header = self.tableResult.horizontalHeader()
+        header.setSectionResizeMode(
+            # QHeaderView.ResizeMode.ResizeToContents
+            QHeaderView.ResizeMode.Interactive
+            # QHeaderView.ResizeMode.Stretch
         )
+        # header.setStretchLastSection(True)
+        self.tableResult.setColumnWidth(0, 350)
 
         try:
             self.editSearch.setText(self.plugin.lastSearch)
         except Exception:
             pass
 
+    @staticmethod
+    def tr(message):
+        return QCoreApplication.translate("nominatim", message)
+
     def cellEntered(self, row, col):
         item = self.tableResult.item(row, 0)
 
         self.rbPoint.reset()
+        self.rbLine.reset()
         self.rbPolygon.reset()
         self.showItem(item)
 
@@ -145,84 +160,95 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             item = self.tableResult.item(r.topRow(), 0)
             self.doMask(item)
 
+    @staticmethod
+    def resultFields():
+        fields = QgsFields()
+        if VQT == 6:
+            fields.append(QgsField("osm_id", OSM_ID_FIELD_TYPE))
+            fields.append(QgsField("class", QMetaType.QString))
+            fields.append(QgsField("type", QMetaType.QString))
+            fields.append(QgsField("name", QMetaType.QString))
+            fields.append(QgsField("address", QMetaType.QString))
+            fields.append(QgsField("extratags", QMetaType.QString))
+            fields.append(QgsField("namedetails", QMetaType.QString))
+        else:
+            fields.append(QgsField("osm_id", OSM_ID_FIELD_TYPE))
+            fields.append(QgsField("class", QVariant.String))
+            fields.append(QgsField("type", QVariant.String))
+            fields.append(QgsField("name", QVariant.String))
+            fields.append(QgsField("address", QVariant.String))
+            fields.append(QgsField("extratags", QVariant.String))
+            fields.append(QgsField("namedetails", QVariant.String))
+        return fields
+
+    @staticmethod
+    def buildGeometry(item):
+        wkt = item.get("geotext")
+        # QgsMessageLog.logMessage(wkt, "Extensions")
+
+        if wkt is None and "boundingbox" in item:
+            bbox = item["boundingbox"]
+            wkt = "POLYGON(({b[2]} {b[0]}, {b[2]} {b[1]}, {b[3]} {b[1]}, {b[3]} {b[0]}, {b[2]} {b[0]}))".format(
+                b=bbox
+            )
+        if wkt is None:
+            lat = item["lat"]
+            lng = item["lon"]
+            wkt = "POINT({} {})".format(lng, lat)
+
+        geom = QgsGeometry.fromWkt(wkt)
+        if geom is None or geom.isEmpty():
+            raise ValueError("Unable to build geometry from Nominatim result")
+        return geom
+
     def populateRow(self, item, idx):
         osm_id = item.get("osm_id")
         name = item["display_name"]
 
-        try:
-            className = QApplication.translate("nominatim", item["class"], None)
-        except Exception:
-            className = ""
+        className = item["class"]
 
         try:
             typeName = QApplication.translate("nominatim", item["type"], None)
         except Exception:
             typeName = ""
 
-        wkt = item.get("geotext")
-        # osm_type = item.get("osm_type")
-
-        # extratags and address_details are dictionaries with content that can
-        # vary per feature and also per nominatim server. We expose them as
-        # HStore strings as that is easy to handle in QGIS with the
-        # hstore_to_map expression function.
-        # When querying the official OSM nominatim server, the extratags
-        # contain all the tags not already included in the class, address, etc
-        # fields. Other nominatim servers can be configured differently.
         address = tools.dict_to_hstore_string(item, "address")
         extratags = tools.dict_to_hstore_string(item, "extratags")
         namedetails = tools.dict_to_hstore_string(item, "namedetails")
 
-        if "boundingbox" in item.keys():
-            # we have a polygonal item
-            bbox = item["boundingbox"]
+        geom = self.buildGeometry(item)
 
-            poFD = ogr.FeatureDefn("Rectangle")
-            poFD.SetGeomType(ogr.wkbPolygon)
-            NominatimDialog.add_fields(poFD)
+        feature = QgsFeature()
+        feature.setFields(self.resultFields())
+        feature.setGeometry(geom)
+        feature.setAttribute("osm_id", osm_id)
+        feature.setAttribute("class", className)
+        feature.setAttribute("type", typeName)
+        feature.setAttribute("name", name)
+        feature.setAttribute("address", address)
+        feature.setAttribute("extratags", extratags)
+        feature.setAttribute("namedetails", namedetails)
 
-            ogrFeature = ogr.Feature(poFD)
-            if wkt is None:
-                wkt = "POLYGON(({b[2]} {b[0]}, {b[2]} {b[1]}, {b[3]} {b[1]}, {b[3]} {b[0]}, {b[2]} {b[0]}))".format(
-                    b=bbox
-                )
+        itemWidget = QTableWidgetItem(name)
+        itemWidget.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+        itemWidget.setData(Qt.ItemDataRole.UserRole, feature)
+        self.tableResult.setItem(idx, 0, itemWidget)
 
-            ogrGeom = ogr.CreateGeometryFromWkt(wkt)
-        else:
-            # we have something to represent as a point
-            lat = item["lat"]
-            lng = item["lon"]
-
-            poFD = ogr.FeatureDefn("Point")
-            poFD.SetGeomType(ogr.wkbPoint)
-            NominatimDialog.add_fields(poFD)
-
-            ogrFeature = ogr.Feature(poFD)
-            wkt = "POINT({} {})".format(lng, lat)
-            ogrGeom = ogr.CreateGeometryFromWkt(wkt)
-
-        ogrFeature.SetGeometry(ogrGeom)
-        ogrFeature.SetFID(int(idx + 1))
-        ogrFeature.SetField("osm_id", osm_id)
-        ogrFeature.SetField("class", className)
-        ogrFeature.SetField("type", typeName)
-        ogrFeature.SetField("name", name)
-        ogrFeature.SetField("address", address)
-        ogrFeature.SetField("extratags", extratags)
-        ogrFeature.SetField("namedetails", namedetails)
-
-        item = QTableWidgetItem(name)
-        item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
-        item.setData(Qt.ItemDataRole.UserRole, ogrFeature)
-        self.tableResult.setItem(idx, 0, item)
-
-        itemLibelle = QTableWidgetItem(className)
+        itemLibelle = QTableWidgetItem(
+            "{} {}".format(self.tr(className), self.tr(typeName))
+        )
         itemLibelle.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         self.tableResult.setItem(idx, 1, itemLibelle)
 
-        itemType = QTableWidgetItem(typeName)
-        itemType.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
-        self.tableResult.setItem(idx, 2, itemType)
+        itemWidget.setToolTip("{}/{} - {}".format(className, typeName, name))
+        if className == "boundary":
+            itemWidget.setForeground(QColor(110, 50, 50))
+        if className == "place":
+            itemWidget.setForeground(QColor(80, 80, 80))
+        if className in ("water", "waterway"):
+            itemWidget.setForeground(QColor(50, 100, 200))
+        if className in ("natural",):
+            itemWidget.setForeground(QColor(20, 110, 50))
 
     def populateTable(self, r):
         idx = 0
@@ -294,11 +320,11 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             )
 
     def getBBox(self, item):
-        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
-        geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        feature = item.data(Qt.ItemDataRole.UserRole)
+        geom = QgsGeometry(feature.geometry())
         self.transform(geom)
 
-        if ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint:
+        if geom.type() == QgsWkbTypes.GeometryType.PointGeometry:
             mapextent = self.plugin.canvas.extent()
             ww = mapextent.width() / 100
             mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
@@ -314,28 +340,31 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
             bbox = QgsRectangle(x - 10 * ww, y - 10 * ww, x + 10 * ww, y + 10 * ww)
             return bbox
-        else:
-            bbox = geom.boundingBox()
-            rubberRect = QgsRectangle(
-                bbox.xMinimum(), bbox.yMinimum(), bbox.xMaximum(), bbox.yMaximum()
-            )
-            return rubberRect
+
+        bbox = geom.boundingBox()
+        rubberRect = QgsRectangle(
+            bbox.xMinimum(), bbox.yMinimum(), bbox.xMaximum(), bbox.yMaximum()
+        )
+        return rubberRect
 
     def showItem(self, item):
         if not item:
             return
 
-        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
-        geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        feature = item.data(Qt.ItemDataRole.UserRole)
+        geom = QgsGeometry(feature.geometry())
         self.transform(geom)
 
-        if ogrFeature.GetDefnRef().GetGeomType() == ogr.wkbPoint:
+        self.rbPoint.reset()
+        self.rbLine.reset()
+        self.rbPolygon.reset()
+
+        if geom.type() == QgsWkbTypes.GeometryType.PointGeometry:
             self.rbPoint.setToGeometry(geom, None)
+        elif geom.type() == QgsWkbTypes.GeometryType.LineGeometry:
+            self.rbLine.setToGeometry(geom, None)
         else:
-            # dont show if it is larger than the canvas
-            if self.plugin.canvas.extent().contains(geom.boundingBox()):
-                pass
-            else:
+            if not self.plugin.canvas.extent().contains(geom.boundingBox()):
                 geom = geom.intersection(
                     QgsGeometry.fromRect(self.plugin.canvas.extent())
                 )
@@ -343,6 +372,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
 
     def go(self, item, zoom=True):
         self.rbPoint.reset()
+        self.rbLine.reset()
         self.rbPolygon.reset()
 
         if zoom:
@@ -370,40 +400,23 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         if singleLayer is None:
             singleLayer = self.plugin.singleLayer
 
-        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
-
-        geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        feature = item.data(Qt.ItemDataRole.UserRole)
+        geom = QgsGeometry(feature.geometry())
         self.transform(geom)
 
-        fields = QgsFields()
-        if VQT == 6:
-            fields.append(QgsField("osm_id", OSM_ID_FIELD_TYPE))
-            fields.append(QgsField("class", QMetaType.QString))
-            fields.append(QgsField("type", QMetaType.QString))
-            fields.append(QgsField("name", QMetaType.QString))
-            fields.append(QgsField("address", QMetaType.QString))
-            fields.append(QgsField("extratags", QMetaType.QString))
-            fields.append(QgsField("namedetails", QMetaType.QString))
-        else:
-            fields.append(QgsField("osm_id", OSM_ID_FIELD_TYPE))
-            fields.append(QgsField("class", QVariant.String))
-            fields.append(QgsField("type", QVariant.String))
-            fields.append(QgsField("name", QVariant.String))
-            fields.append(QgsField("address", QVariant.String))
-            fields.append(QgsField("extratags", QVariant.String))
-            fields.append(QgsField("namedetails", QVariant.String))
+        fields = self.resultFields()
 
         fet = QgsFeature()
-        fet.initAttributes(7)
+        fet.initAttributes(len(fields))
         fet.setFields(fields)
         fet.setGeometry(geom)
-        fet.setAttribute("osm_id", (ogrFeature.GetFieldAsInteger64("osm_id")))
-        fet.setAttribute("class", (ogrFeature.GetFieldAsString("class")))
-        fet.setAttribute("type", (ogrFeature.GetFieldAsString("type")))
-        fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
-        fet.setAttribute("address", (ogrFeature.GetFieldAsString("address")))
-        fet.setAttribute("extratags", (ogrFeature.GetFieldAsString("extratags")))
-        fet.setAttribute("namedetails", (ogrFeature.GetFieldAsString("namedetails")))
+        fet.setAttribute("osm_id", feature["osm_id"])
+        fet.setAttribute("class", feature["class"])
+        fet.setAttribute("type", feature["type"])
+        fet.setAttribute("name", feature["name"])
+        fet.setAttribute("address", feature["address"])
+        fet.setAttribute("extratags", feature["extratags"])
+        fet.setAttribute("namedetails", feature["namedetails"])
 
         vl = None
         if not singleLayer:
@@ -415,7 +428,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
                 if vl:
                     self.singleLayerId[geom.type()] = vl.id()
         else:
-            layerName = "OSM " + ogrFeature.GetFieldAsString("osm_id")
+            layerName = "OSM " + str(feature["osm_id"])
             vl = self.addNewLayer(layerName, geom.type(), fields)
 
         if vl is not None:
@@ -424,40 +437,17 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             pr.addFeatures([fet])
             vl.commitChanges()
 
-            # mise a jour etendue de la couche
             vl.updateExtents()
             self.go(item, False)
 
             return vl
 
-    @staticmethod
-    def add_fields(feature_definition):
-        """Adds a predefined set of fields to an OGR feature definition.
-
-        Args:
-            feature_definition: Feature definition to add the fields to.
-        """
-        oFLD = ogr.FieldDefn("osm_id", ogr.OFTInteger64)
-        feature_definition.AddFieldDefn(oFLD)
-        oFLD = ogr.FieldDefn("class", ogr.OFTString)
-        feature_definition.AddFieldDefn(oFLD)
-        oFLD = ogr.FieldDefn("type", ogr.OFTString)
-        feature_definition.AddFieldDefn(oFLD)
-        oFLD = ogr.FieldDefn("name", ogr.OFTString)
-        feature_definition.AddFieldDefn(oFLD)
-        oFLD = ogr.FieldDefn("address", ogr.OFTString)
-        feature_definition.AddFieldDefn(oFLD)
-        oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
-        feature_definition.AddFieldDefn(oFLD)
-        oFLD = ogr.FieldDefn("namedetails", ogr.OFTString)
-        feature_definition.AddFieldDefn(oFLD)
-
     def doMask(self, item):
         mapcrs = self.plugin.canvas.mapSettings().destinationCrs()
 
-        ogrFeature = item.data(Qt.ItemDataRole.UserRole)
-        layerName = "OSM " + ogrFeature.GetFieldAsString("osm_id")
-        geom = QgsGeometry.fromWkt(ogrFeature.GetGeometryRef().ExportToWkt())
+        feature = item.data(Qt.ItemDataRole.UserRole)
+        layerName = "OSM " + str(feature["osm_id"])
+        geom = QgsGeometry(feature.geometry())
         self.transform(geom)
 
         if geom.type() == QgsWkbTypes.GeometryType.PolygonGeometry:
