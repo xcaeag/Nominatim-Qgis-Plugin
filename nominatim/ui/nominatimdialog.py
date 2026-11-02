@@ -249,6 +249,8 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             itemWidget.setForeground(QColor(50, 100, 200))
         if className in ("natural",):
             itemWidget.setForeground(QColor(20, 110, 50))
+        if className in ("landuse",):
+            itemWidget.setForeground(QColor(30, 90, 60))
 
     def populateTable(self, r):
         idx = 0
