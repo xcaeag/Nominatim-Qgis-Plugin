@@ -56,7 +56,7 @@
          </size>
         </property>
         <property name="layoutDirection">
-         <enum>Qt::LayoutDirection::LeftToRight</enum>
+         <enum>Qt::LeftToRight</enum>
         </property>
         <property name="text">
          <string>Name contains...</string>
@@ -90,8 +90,15 @@
       </item>
       <item>
        <widget class="QToolButton" name="btnSearch">
+        <property name="toolTip">
+         <string>Search</string>
+        </property>
         <property name="text">
          <string notr="true">-&gt;</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::EditFind">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -113,6 +120,10 @@
         </property>
         <property name="text">
          <string notr="true">&lt;-</string>
+        </property>
+        <property name="icon">
+         <iconset theme="QIcon::ThemeIcon::MediaSeekBackward">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -158,19 +169,22 @@
          <bool>true</bool>
         </property>
         <property name="selectionMode">
-         <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+         <enum>QAbstractItemView::SingleSelection</enum>
         </property>
         <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+         <enum>QAbstractItemView::SelectItems</enum>
         </property>
         <property name="textElideMode">
-         <enum>Qt::TextElideMode::ElideNone</enum>
+         <enum>Qt::ElideNone</enum>
+        </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
         </property>
         <property name="showGrid">
          <bool>false</bool>
         </property>
         <property name="gridStyle">
-         <enum>Qt::PenStyle::SolidLine</enum>
+         <enum>Qt::NoPen</enum>
         </property>
         <property name="sortingEnabled">
          <bool>true</bool>
@@ -179,10 +193,13 @@
          <number>0</number>
         </property>
         <property name="columnCount">
-         <number>3</number>
+         <number>1</number>
         </property>
         <attribute name="horizontalHeaderVisible">
          <bool>true</bool>
+        </attribute>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>18</number>
         </attribute>
         <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
          <bool>true</bool>
@@ -202,16 +219,6 @@
         <column>
          <property name="text">
           <string>Name</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Class</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Infos</string>
          </property>
         </column>
        </widget>
@@ -259,7 +266,7 @@
          <bool>false</bool>
         </property>
         <property name="focusPolicy">
-         <enum>Qt::FocusPolicy::TabFocus</enum>
+         <enum>Qt::NoFocus</enum>
         </property>
         <property name="acceptDrops">
          <bool>false</bool>
@@ -278,7 +285,7 @@
          <bool>false</bool>
         </property>
         <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
+         <enum>Qt::ToolButtonIconOnly</enum>
         </property>
         <property name="autoRaise">
          <bool>false</bool>
