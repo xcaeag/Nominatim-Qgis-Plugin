@@ -52,6 +52,11 @@ def osmSearchJson(params, options, options2):
     contents = str(options).strip()
     items = contents.split(" ")
 
+    # default parameters
+    params["extratags"] = "1"
+    params["addressdetails"] = "1"
+    params["namedetails"] = "1"
+
     for (k, v) in options2.items():
         if k in ["viewbox"]:
             params["bounded"] = "1"
@@ -64,21 +69,19 @@ def osmSearchJson(params, options, options2):
             pairs.append(pair)
 
     for (k, v) in pairs:
-        if (
-            k
-            in [
-                "viewbox",
-                "countrycodes",
-                "limit",
-                "exclude_place_ids",
-                "addressdetails",
-                "bounded",
-                "routewidth",
-                "osm_type",
-                "osm_id",
-            ]
-            and not (k in options2.keys())
-        ):
+        if k in [
+            "viewbox",
+            "countrycodes",
+            "limit",
+            "exclude_place_ids",
+            "addressdetails",
+            "namedetails",
+            "extratags",
+            "bounded",
+            "routewidth",
+            "osm_type",
+            "osm_id",
+        ] and not (k in options2.keys()):
             params[k] = v
 
         if k in ["viewbox"]:
@@ -86,8 +89,6 @@ def osmSearchJson(params, options, options2):
 
     params["polygon_text"] = "1"
     params["format"] = "json"
-    params["extratags"] = "1"
-    params["addressdetails"] = "1"
 
     try:
         locale = QSettings().value("locale/userLocale")
@@ -138,7 +139,7 @@ def osmSearch(canvas, txt):
             )
             options2 = {"viewbox": vb}
 
-        params = {"q": txt, "addressdetails": "0"}
+        params = {"q": txt}
         return osmSearchJson(params, options, options2)
 
     except Exception:
@@ -147,7 +148,7 @@ def osmSearch(canvas, txt):
     return None
 
 
-def dict_to_hstore_string(d):
+def dict_to_hstore_string(item, attrname):
     """Returns an hstore string representation of the dictionary.
 
     Note: The dictionary must be flat or the resulting hstore string
@@ -160,11 +161,17 @@ def dict_to_hstore_string(d):
         str: A hstore string representation of the dict
     """
 
-    hstore_strings = []
-    for key, value in d.items():
-        hstore_string = f'"{key}"=>"{value}"'
-        hstore_strings.append(hstore_string)
-    return ",".join(hstore_strings)
+    d = item.get(attrname)
+    if d:
+        hstore_strings = []
+        for key, value in d.items():
+            hstore_string = f'"{key}"=>"{value}"'
+            hstore_strings.append(hstore_string)
+
+        return ",".join(hstore_strings)
+    else:
+        return None
+
 
 """
     A problem it seems in the 'utils' module of QGis.

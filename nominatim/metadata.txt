@@ -8,6 +8,7 @@ version=1.6.4-dev
 supportsQt6=True
 
 changelog=
+    1.7.0 : fix #52
     1.6.3 : fix #47
     1.6.2 : fix #43
     1.6.1 : fix #33

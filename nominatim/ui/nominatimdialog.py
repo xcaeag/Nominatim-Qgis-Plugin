@@ -169,17 +169,9 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         # When querying the official OSM nominatim server, the extratags
         # contain all the tags not already included in the class, address, etc
         # fields. Other nominatim servers can be configured differently.
-        address = item.get("address")
-        if address:
-            address = tools.dict_to_hstore_string(address)
-        else:
-            address = ""
-
-        extratags = item.get("extratags")
-        if extratags:
-            extratags = tools.dict_to_hstore_string(extratags)
-        else:
-            extratags = ""
+        address = tools.dict_to_hstore_string(item, "address")
+        extratags = tools.dict_to_hstore_string(item, "extratags")
+        namedetails = tools.dict_to_hstore_string(item, "namedetails")
 
         if "boundingbox" in item.keys():
             # we have a polygonal item
@@ -217,6 +209,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         ogrFeature.SetField("name", name)
         ogrFeature.SetField("address", address)
         ogrFeature.SetField("extratags", extratags)
+        ogrFeature.SetField("namedetails", namedetails)
 
         item = QTableWidgetItem(name)
         item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
@@ -390,6 +383,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             fields.append(QgsField("name", QMetaType.QString))
             fields.append(QgsField("address", QMetaType.QString))
             fields.append(QgsField("extratags", QMetaType.QString))
+            fields.append(QgsField("namedetails", QMetaType.QString))
         else:
             fields.append(QgsField("osm_id", OSM_ID_FIELD_TYPE))
             fields.append(QgsField("class", QVariant.String))
@@ -397,9 +391,10 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
             fields.append(QgsField("name", QVariant.String))
             fields.append(QgsField("address", QVariant.String))
             fields.append(QgsField("extratags", QVariant.String))
+            fields.append(QgsField("namedetails", QVariant.String))
 
         fet = QgsFeature()
-        fet.initAttributes(2)
+        fet.initAttributes(7)
         fet.setFields(fields)
         fet.setGeometry(geom)
         fet.setAttribute("osm_id", (ogrFeature.GetFieldAsInteger64("osm_id")))
@@ -408,6 +403,7 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         fet.setAttribute("name", (ogrFeature.GetFieldAsString("name")))
         fet.setAttribute("address", (ogrFeature.GetFieldAsString("address")))
         fet.setAttribute("extratags", (ogrFeature.GetFieldAsString("extratags")))
+        fet.setAttribute("namedetails", (ogrFeature.GetFieldAsString("namedetails")))
 
         vl = None
         if not singleLayer:
@@ -452,6 +448,8 @@ class NominatimDialog(QDockWidget, FORM_CLASS):
         oFLD = ogr.FieldDefn("address", ogr.OFTString)
         feature_definition.AddFieldDefn(oFLD)
         oFLD = ogr.FieldDefn("extratags", ogr.OFTString)
+        feature_definition.AddFieldDefn(oFLD)
+        oFLD = ogr.FieldDefn("namedetails", ogr.OFTString)
         feature_definition.AddFieldDefn(oFLD)
 
     def doMask(self, item):
