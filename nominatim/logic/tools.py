@@ -2,6 +2,7 @@ import json
 import os
 
 from qgis.core import (
+    Qgis,
     QgsApplication,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
@@ -9,6 +10,7 @@ from qgis.core import (
     QgsNetworkAccessManager,
     QgsProject,
 )
+from qgis.utils import iface
 from qgis.PyQt.QtCore import QDir, QLocale, QSettings, Qt, QUrl, QUrlQuery
 from qgis.PyQt.QtGui import QDesktopServices
 from qgis.PyQt.QtNetwork import QNetworkRequest
@@ -30,6 +32,28 @@ def getHttp(uri, params):
         req = QNetworkRequest(rq)
         try:
             reply = nam.blockingGet(req)
+            status_code = reply.attribute(
+                QNetworkRequest.Attribute.HttpStatusCodeAttribute
+            )
+            if status_code is not None and status_code == 400:
+                resource = reply.content().data().decode("utf8")
+                r = json.loads(resource)
+                iface.messageBar().pushMessage(
+                    "Nominatim",
+                    r["error"]["message"],
+                    level=Qgis.MessageLevel.Warning,
+                )
+                return None
+
+            if status_code is not None and status_code > 400:
+                QgsMessageLog.logMessage(f"{reply.errorString()}", "Extensions")
+                iface.messageBar().pushMessage(
+                    "Nominatim",
+                    reply.content().data().decode("utf8"),
+                    level=Qgis.MessageLevel.Warning,
+                )
+                return None
+
             resource = reply.content().data().decode("utf8")
             r = json.loads(resource)
 
@@ -42,10 +66,10 @@ def getHttp(uri, params):
             for m in e.args:
                 QgsMessageLog.logMessage(m, "Extensions")
 
+            return None
+
     finally:
         QgsApplication.restoreOverrideCursor()
-
-    return None
 
 
 def osmSearchJson(params, options, options2):
@@ -56,6 +80,7 @@ def osmSearchJson(params, options, options2):
     params["extratags"] = "1"
     params["addressdetails"] = "1"
     params["namedetails"] = "1"
+    params["limit"] = "40"
 
     for (k, v) in options2.items():
         if k in ["viewbox"]:
@@ -104,6 +129,12 @@ def osmSearchJson(params, options, options2):
 def osmFindNearbyJSON(params):
     uri = "https://nominatim.openstreetmap.org/reverse"
     params["format"] = "json"
+
+    # default parameters
+    params["extratags"] = "1"
+    params["addressdetails"] = "1"
+    params["namedetails"] = "1"
+    params["limit"] = "20"
 
     results = []
     locale = QSettings().value("locale/userLocale")
